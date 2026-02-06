@@ -379,6 +379,7 @@ CASES = [
 if st.button("Fetch Orders"):
     terminal = st.empty()
     results = run_bot(CASES, terminal, debug_mode=debug_mode, debug_dir=debug_dir)
+    st.session_state["last_results"] = results
 
     if debug_mode:
         st.info(f"Diagnostics saved under: `{debug_dir.as_posix()}`")
@@ -402,19 +403,22 @@ if st.button("Fetch Orders"):
                 else:
                     st.write("No processed captcha image found yet.")
 
-    if results:
-        st.markdown("---")
-        st.success(f"Fetched {len(results)} orders")
-        for res in results:
-            with st.expander(res["desc"], expanded=True):
-                st.download_button(
-                    label="Download PDF",
-                    data=res["data"],
-                    file_name=f"{res['label'].replace('/', '_')}.pdf",
-                    mime="application/pdf",
-                )
-                b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
-                pdf_display = (
-                    f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="500"></iframe>'
-                )
-                st.markdown(pdf_display, unsafe_allow_html=True)
+results_to_show = st.session_state.get("last_results", [])
+if results_to_show:
+    st.markdown("---")
+    st.success(f"Fetched {len(results_to_show)} orders")
+    for res in results_to_show:
+        with st.expander(res["desc"], expanded=True):
+            st.download_button(
+                label="Download PDF",
+                data=res["data"],
+                file_name=f"{res['label'].replace('/', '_')}.pdf",
+                mime="application/pdf",
+            )
+            b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
+            pdf_display = (
+                f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="500"></iframe>'
+            )
+            st.markdown(pdf_display, unsafe_allow_html=True)
+elif "last_results" in st.session_state:
+    st.warning("Run finished, but no orders were fetched in this attempt. Check terminal/debug artifacts above.")
