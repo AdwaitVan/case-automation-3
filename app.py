@@ -52,15 +52,20 @@ def run_bot(cases, terminal_placeholder):
     results = []
     
     with sync_playwright() as p:
-        update_terminal("🚀 Starting Cloud Robot...", terminal_placeholder, logs)
+        update_terminal("🚀 Starting Cloud Robot (Aggressive Mode)...", terminal_placeholder, logs)
         
         # --- CLOUD OPTIMIZED BROWSER ---
         browser = p.chromium.launch(
             headless=True,
             args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
         )
-        context = browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         page = context.new_page()
+        
+        # Set longer timeout (60s) for slow High Court servers
+        page.set_default_timeout(60000)
 
         for case in cases:
             case_label = f"{case['name']} {case['no']}/{case['year']}"
@@ -69,47 +74,46 @@ def run_bot(cases, terminal_placeholder):
             success = False
             for attempt in range(1, MAX_RETRIES + 1):
                 try:
-                    # 1. Load Page
-                    try: page.goto(URL, timeout=60000)
-                    except: continue
+                    # 1. Load Page (Wait only for HTML, not images)
+                    try: 
+                        page.goto(URL, timeout=60000, wait_until="domcontentloaded")
+                    except: 
+                        update_terminal("⚠️ Page load timeout (continuing anyway)...", terminal_placeholder, logs)
 
-                    # --- RESTORED POPUP KILLER ---
-                    # The logs showed "#bs_alert" was blocking clicks.
-                    # We blindly try to close it if it exists.
+                    # 2. Aggressive Popup Killing (JS Delete)
+                    # Instead of clicking 'close', we delete the popup element entirely from the code
                     time.sleep(2)
                     try:
-                        if page.locator("#bs_alert").is_visible():
-                            update_terminal("🧹 Closing '#bs_alert' popup...", terminal_placeholder, logs)
-                            # Try clicking the 'X' button inside the alert
-                            if page.locator("#bs_alert button.close").is_visible():
-                                page.locator("#bs_alert button.close").click()
-                            else:
-                                # Fallback: Click the body to dismiss or standard modal close
-                                page.locator("button[data-bs-dismiss='modal']").click()
-                            time.sleep(1)
+                        page.evaluate("document.querySelectorAll('.modal, .alert, #bs_alert').forEach(e => e.remove())")
+                        update_terminal("🧹 Nuked popups via JS", terminal_placeholder, logs)
                     except: pass
-                    # -----------------------------
 
-                    # 2. Open Left Menu
-                    page.locator("#leftPaneMenuCS").click()
+                    # 3. Open Left Menu (Force + JS Fallback)
+                    try:
+                        page.locator("#leftPaneMenuCS").click(force=True)
+                    except:
+                        page.evaluate("document.querySelector('#leftPaneMenuCS').click()")
 
-                    # 3. Select High Court
+                    # 4. Select High Court (Standard Wait)
                     page.select_option("#sess_state_code", value="1")
                     time.sleep(1)
                     page.select_option("#court_complex_code", value="1") 
                     time.sleep(1)
 
-                    # 4. Click Case Number (WITH FORCE=TRUE)
-                    # force=True tells Playwright to ignore the popup if it's still hovering
-                    if page.locator("#CScaseNumber").is_visible():
-                        page.locator("#CScaseNumber").click(force=True)
+                    # 5. Click Case Number Tab (Force + JS Fallback)
+                    try:
+                        if page.locator("#CScaseNumber").is_visible():
+                            page.locator("#CScaseNumber").click(force=True)
+                    except:
+                        # If force click fails, use JS to click the element directly
+                        page.evaluate("document.querySelector('#CScaseNumber').click()")
 
-                    # 5. Fill Details
+                    # 6. Fill Details
                     page.select_option("#case_type", value=case['value'])
                     page.locator("#search_case_no").fill(case['no'])
                     page.locator("#rgyear").fill(case['year'])
 
-                    # 6. Captcha
+                    # 7. Captcha
                     code = solve_captcha(page)
                     if not code:
                         update_terminal("⚠️ Captcha blurry. Retrying...", terminal_placeholder, logs)
@@ -117,18 +121,28 @@ def run_bot(cases, terminal_placeholder):
                         continue
                     
                     page.locator("#captcha").fill(code)
-                    page.locator("#goResetDiv input[value='Go']").click()
                     
-                    # 7. Check for Invalid Captcha
+                    # Force Click Go
+                    page.locator("#goResetDiv input[value='Go']").click(force=True)
+                    
+                    # 8. Check for Invalid Captcha
                     try: 
                         page.wait_for_selector("text=Invalid Captcha", timeout=3000)
                         update_terminal("❌ Invalid Captcha. Retrying...", terminal_placeholder, logs)
                         continue
                     except: pass 
 
-                    # 8. Extract Result
-                    page.locator("#dispTable a[onclick*='viewHistory']").first.click()
-                    page.wait_for_selector(".order_table", state="visible", timeout=20000)
+                    # 9. Extract Result
+                    try:
+                        # Wait for History link
+                        page.wait_for_selector("#dispTable a[onclick*='viewHistory']", timeout=10000)
+                        page.locator("#dispTable a[onclick*='viewHistory']").first.click(force=True)
+                        # Wait for Table
+                        page.wait_for_selector(".order_table", state="visible", timeout=20000)
+                    except:
+                        update_terminal("⚠️ No history/orders found.", terminal_placeholder, logs)
+                        success = True # Stop retrying, just no data
+                        break
                     
                     date_str, rel_link = get_latest_order_link(page.content())
                     
@@ -139,6 +153,7 @@ def run_bot(cases, terminal_placeholder):
                         response = page.request.get(full_url)
                         content_type = response.headers.get("content-type", "")
                         
+                        # VALIDATE PDF
                         if response.status == 200 and "application/pdf" in content_type:
                             results.append({
                                 "label": f"{case['no']}/{case['year']}",
@@ -153,13 +168,13 @@ def run_bot(cases, terminal_placeholder):
                             success = True 
                             break
                     else:
-                        update_terminal("⚠️ No orders found.", terminal_placeholder, logs)
+                        update_terminal("⚠️ No recent orders found.", terminal_placeholder, logs)
                         success = True
                         break
 
                 except Exception as e:
-                    # Simple error logging to avoid clutter
-                    msg = str(e).split("\n")[0] # Only show the first line of error
+                    # Clean error msg
+                    msg = str(e).split("\n")[0]
                     update_terminal(f"⚠️ Retry {attempt}: {msg}", terminal_placeholder, logs)
                     time.sleep(2)
             
@@ -185,14 +200,17 @@ if st.button("🚀 Fetch Orders"):
     
     if results:
         st.markdown("---")
+        st.success(f"Fetched {len(results)} Orders!")
         for res in results:
             with st.expander(f"📄 {res['desc']}", expanded=True):
+                # Download Button
                 st.download_button(
                     label="⬇️ Download PDF",
                     data=res['data'],
                     file_name=f"{res['label'].replace('/', '_')}.pdf",
                     mime="application/pdf"
                 )
+                # Preview
                 b64_pdf = base64.b64encode(res['data']).decode('utf-8')
                 pdf_display = f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="500"></iframe>'
                 st.markdown(pdf_display, unsafe_allow_html=True)
