@@ -59,12 +59,14 @@ def run_bot(cases, terminal_placeholder):
             headless=True,
             args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
         )
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-        page = context.new_page()
         
-        # Set longer timeout (60s) for slow High Court servers
+        # FIX: Force a large screen size so the menu is always visible
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={'width': 1920, 'height': 1080}  # <--- THIS IS THE KEY FIX
+        )
+        
+        page = context.new_page()
         page.set_default_timeout(60000)
 
         for case in cases:
