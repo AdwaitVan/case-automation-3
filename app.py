@@ -1,3 +1,4 @@
+## Connection Check: VS Code is synced!
 import base64
 import io
 import os
