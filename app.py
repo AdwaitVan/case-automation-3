@@ -148,62 +148,30 @@ def solve_captcha(page, case_slug, attempt, debug_mode, debug_dir, placeholder, 
         return ""
 
 
-def parse_order_date(date_text: str):
-    text = (date_text or "").strip()
-    if not text:
-        return None
-
-    match = re.search(r"(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})", text)
-    if not match:
-        return None
-    token = match.group(1)
-
-    for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d-%m-%y", "%d/%m/%y"):
-        try:
-            return datetime.strptime(token, fmt)
-        except ValueError:
-            continue
-    return None
-
-
-def get_order_links(html_content):
+def get_latest_order_link(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
     table = soup.find("table", class_="order_table")
     if not table:
-        return []
+        return None, None
 
     orders = []
     for row in table.find_all("tr")[1:]:
         cols = row.find_all("td")
-        if not cols:
+        if len(cols) < 5:
             continue
-
-        link_tag = row.find("a")
-        if not link_tag:
-            continue
-
-        href = (link_tag.get("href") or "").strip()
-        if not href:
-            continue
-
-        row_text = " ".join(col.get_text(" ", strip=True) for col in cols)
-        dt_obj = parse_order_date(row_text)
-        dt_sort = dt_obj or datetime.min
-        date_str = dt_obj.strftime("%d-%m-%Y") if dt_obj else "Unknown date"
-        orders.append({"date_sort": dt_sort, "date_str": date_str, "href": href})
+        date_text = cols[3].get_text(strip=True)
+        link_tag = cols[4].find("a")
+        if date_text and link_tag:
+            try:
+                dt_obj = datetime.strptime(date_text, "%d-%m-%Y")
+                orders.append((dt_obj, link_tag.get("href")))
+            except Exception:
+                continue
 
     if not orders:
-        return []
-
-    orders.sort(key=lambda item: item["date_sort"], reverse=True)
-    deduped = []
-    seen = set()
-    for item in orders:
-        if item["href"] in seen:
-            continue
-        seen.add(item["href"])
-        deduped.append(item)
-    return deduped
+        return None, None
+    orders.sort(key=lambda item: item[0], reverse=True)
+    return orders[0][0].strftime("%d-%m-%Y"), orders[0][1]
 
 
 def run_bot(cases, terminal_placeholder, debug_mode=False, debug_dir=Path("debug_artifacts")):
@@ -329,39 +297,24 @@ def run_bot(cases, terminal_placeholder, debug_mode=False, debug_dir=Path("debug
                         success = True
                         break
 
-                    order_links = get_order_links(page.content())
-                    if order_links:
-                        update_terminal(
-                            f"[info] found {len(order_links)} order link(s); attempting download",
-                            terminal_placeholder,
-                            logs,
-                        )
-                        downloaded = 0
-                        for idx, order in enumerate(order_links, start=1):
-                            full_url = urljoin("https://hcservices.ecourts.gov.in/hcservices/", order["href"])
-                            response = page.request.get(full_url)
-                            content_type = (response.headers.get("content-type", "") or "").lower()
-                            body = response.body()
-                            is_pdf = body[:4] == b"%PDF" or "pdf" in content_type
-                            if response.status == 200 and is_pdf:
-                                results.append(
-                                    {
-                                        "label": f"{case['no']}_{case['year']}_order_{idx}",
-                                        "desc": f"{case['name']} (Order: {order['date_str']})",
-                                        "data": body,
-                                    }
-                                )
-                                downloaded += 1
-                            else:
-                                update_terminal(
-                                    f"[warn] skipped non-pdf/broken order link (status={response.status}, content-type='{content_type}')",
-                                    terminal_placeholder,
-                                    logs,
-                                )
-                        if downloaded > 0:
-                            update_terminal(f"[ok] downloaded {downloaded} order pdf(s)", terminal_placeholder, logs)
-                        else:
-                            update_terminal("[warn] order links found but no valid PDFs downloaded", terminal_placeholder, logs)
+                    date_str, rel_link = get_latest_order_link(page.content())
+                    if date_str:
+                        full_url = f"https://hcservices.ecourts.gov.in/hcservices/{rel_link}"
+                        update_terminal(f"[info] latest order date: {date_str}", terminal_placeholder, logs)
+                        response = page.request.get(full_url)
+                        content_type = response.headers.get("content-type", "")
+                        if response.status == 200 and "application/pdf" in content_type:
+                            results.append(
+                                {
+                                    "label": f"{case['no']}/{case['year']}",
+                                    "desc": f"{case['name']} (Order: {date_str})",
+                                    "data": response.body(),
+                                }
+                            )
+                            update_terminal("[ok] pdf downloaded", terminal_placeholder, logs)
+                            success = True
+                            break
+                        update_terminal("[warn] order listed but file missing/broken", terminal_placeholder, logs)
                         success = True
                         break
 
@@ -456,14 +409,12 @@ if results_to_show:
     st.markdown("---")
     st.success(f"Fetched {len(results_to_show)} orders")
     for res in results_to_show:
-        result_key = re.sub(r"[^A-Za-z0-9_]", "_", f"{res['label']}_{res['desc']}")
         with st.expander(res["desc"], expanded=True):
             st.download_button(
                 label="Download PDF",
                 data=res["data"],
                 file_name=f"{res['label'].replace('/', '_')}.pdf",
                 mime="application/pdf",
-                key=f"download_{result_key}",
             )
             b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
             pdf_display = (
