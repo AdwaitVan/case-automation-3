@@ -431,6 +431,24 @@ def run_bot(
 
 st.set_page_config(page_title="High Court Bot", layout="wide")
 st.title("High Court Automation")
+st.markdown(
+    """
+<style>
+.st-key-top_add_row button, .st-key-bottom_add_row button {
+    background-color: #2e7d32 !important;
+    color: white !important;
+    border-color: #2e7d32 !important;
+}
+.st-key-top_remove_last button, .st-key-bottom_remove_last button,
+.st-key-top_reset_rows button, .st-key-bottom_reset_rows button {
+    background-color: #ffdede !important;
+    color: #7a1111 !important;
+    border-color: #ffbcbc !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
 main_col, bg_col = st.columns([2, 1], gap="large")
 
@@ -444,6 +462,9 @@ with main_col:
     selected_hc_code = HIGH_COURTS[high_court_name]
     bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
     bench_options = list(bench_map.keys()) if bench_map else []
+    bench_display_map = {"Bombay High Court,Bench at Kolhapur": "Bench of Kolhapur"}
+    bench_display_options = [bench_display_map.get(b, b) for b in bench_options]
+    display_to_bench = {bench_display_map.get(b, b): b for b in bench_options}
     quick_filter_text = st.text_input(
         "Case Type Search",
         value="",
@@ -456,7 +477,6 @@ with main_col:
 
     sample_rows = [
         {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
-        {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
     ]
 
     if "next_row_id" not in st.session_state:
@@ -474,16 +494,13 @@ with main_col:
     with action_col1:
         if st.button("Add Row", key="top_add_row"):
             st.session_state["case_rows"].append(make_row())
-            st.rerun()
     with action_col2:
         if st.button("Remove Last Row", key="top_remove_last") and st.session_state["case_rows"]:
             st.session_state["case_rows"].pop()
-            st.rerun()
     with action_col3:
         if st.button("Reset To First Sample", key="top_reset_rows"):
             first = sample_rows[0]
             st.session_state["case_rows"] = [make_row(**first)]
-            st.rerun()
 
     st.markdown("**Case Table**")
     head1, head2, head3, head4, head5 = st.columns([5, 6, 2, 2, 1])
@@ -501,17 +518,24 @@ with main_col:
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
-            bench_choice_options = ["Choose Option"] + bench_options
-            bench_idx = bench_choice_options.index(default_bench) if default_bench in bench_choice_options else 0
-            bench_name = c1.selectbox(
+            bench_choice_options = ["Choose Option"] + bench_display_options
+            default_bench_display = bench_display_map.get(default_bench, default_bench)
+            bench_idx = (
+                bench_choice_options.index(default_bench_display)
+                if default_bench_display in bench_choice_options
+                else 0
+            )
+            bench_name_display = c1.selectbox(
                 f"bench_{idx}",
                 options=bench_choice_options,
                 index=bench_idx,
                 key=f"row_bench_{row_id}",
                 label_visibility="collapsed",
             )
-            if bench_name == "Choose Option":
+            if bench_name_display == "Choose Option":
                 bench_name = ""
+            else:
+                bench_name = display_to_bench.get(bench_name_display, "")
         else:
             bench_name = c1.text_input(
                 f"bench_{idx}",
@@ -649,7 +673,6 @@ with bg_col:
                                     year=case["year"],
                                 )
                             )
-                            st.rerun()
     else:
         st.caption("No run history yet.")
 
