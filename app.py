@@ -11,7 +11,6 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import ddddocr
-import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 from PIL import Image, ImageEnhance
@@ -426,105 +425,124 @@ with main_col:
     selected_hc_code = HIGH_COURTS[high_court_name]
     bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
     bench_options = list(bench_map.keys()) if bench_map else []
-    case_type_union = sorted(
-        {
-            item.get("label", "").strip()
-            for bench_name in bench_options
-            for item in CASE_TYPES_BY_BENCH.get(bench_name, [])
-            if item.get("label")
-        }
-    )
-
-    filter_col1, filter_col2 = st.columns(2)
-    with filter_col1:
-        quick_filter_bench = st.selectbox(
-            "Case Type Filter Bench",
-            options=["All benches"] + bench_options,
-            index=0,
-            help="Use this to narrow case-type dropdown options while entering rows.",
-        )
-    with filter_col2:
-        quick_filter_text = st.text_input(
-            "Case Type Search",
-            value="",
-            help="Type part of case type, e.g. WP, SA, contempt, arbitration",
-        ).strip().lower()
-
-    if quick_filter_bench == "All benches":
-        base_case_type_options = case_type_union
-    else:
-        base_case_type_options = sorted(
-            {
-                item.get("label", "").strip()
-                for item in CASE_TYPES_BY_BENCH.get(quick_filter_bench, [])
-                if item.get("label")
-            }
-        )
-
-    if quick_filter_text:
-        filtered_case_type_options = [opt for opt in base_case_type_options if quick_filter_text in opt.lower()]
-    else:
-        filtered_case_type_options = base_case_type_options
-
-    if not filtered_case_type_options and quick_filter_text:
-        st.warning("No case types match this quick filter. Showing unfiltered list.")
-        case_type_dropdown_options = base_case_type_options
-    else:
-        case_type_dropdown_options = filtered_case_type_options
+    quick_filter_text = st.text_input(
+        "Case Type Search",
+        value="",
+        help="Type part of case type (e.g. cra, wp, contempt). Filter applies bench-wise per row.",
+    ).strip().lower()
 
     st.caption("One row = one case. Use per-row `bench` and `case_type` dropdowns.")
     if not bench_map:
-        st.warning("Bench list for this High Court is not configured yet. Enter bench code in `bench` column (e.g., 1, 3, 4...).")
-    elif not case_type_union:
-        st.warning("No static case-type mapping loaded for this High Court/bench set.")
-    default_cases_table = [
-        {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
-        {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
-    ]
-    bench_column_config = (
-        st.column_config.SelectboxColumn("bench", options=bench_options, required=True)
-        if bench_map
-        else st.column_config.TextColumn("bench", required=True)
-    )
-    case_type_column_config = (
-        st.column_config.SelectboxColumn("case_type", options=case_type_dropdown_options, required=True)
-        if case_type_dropdown_options
-        else st.column_config.TextColumn("case_type", required=True)
-    )
-    cases_df = st.data_editor(
-        pd.DataFrame(default_cases_table),
-        hide_index=True,
-        num_rows="dynamic",
-        use_container_width=True,
-        column_config={
-            "bench": bench_column_config,
-            "case_type": case_type_column_config,
-            "no": st.column_config.TextColumn("no", required=True),
-            "year": st.column_config.TextColumn("year", required=True),
-        },
-    )
+        st.warning("Bench list for this High Court is not configured yet.")
+
+    if "case_rows" not in st.session_state:
+        st.session_state["case_rows"] = [
+            {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
+            {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
+        ]
+
+    action_col1, action_col2, action_col3 = st.columns(3)
+    with action_col1:
+        if st.button("Add Row"):
+            st.session_state["case_rows"].append({"bench": "", "case_type": "", "no": "", "year": ""})
+    with action_col2:
+        if st.button("Remove Last Row") and st.session_state["case_rows"]:
+            st.session_state["case_rows"].pop()
+    with action_col3:
+        if st.button("Reset Sample Rows"):
+            st.session_state["case_rows"] = [
+                {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
+                {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
+            ]
+
+    st.markdown("**Case Table**")
+    head1, head2, head3, head4 = st.columns([3, 4, 2, 2])
+    head1.markdown("`bench`")
+    head2.markdown("`case_type`")
+    head3.markdown("`no`")
+    head4.markdown("`year`")
+
+    row_inputs = []
+    for idx, row in enumerate(st.session_state["case_rows"], start=1):
+        c1, c2, c3, c4 = st.columns([3, 4, 2, 2])
+
+        default_bench = str(row.get("bench", "") or "")
+        if bench_options:
+            bench_idx = bench_options.index(default_bench) if default_bench in bench_options else 0
+            bench_name = c1.selectbox(
+                f"bench_{idx}",
+                options=bench_options,
+                index=bench_idx,
+                key=f"row_bench_{idx}",
+                label_visibility="collapsed",
+            )
+        else:
+            bench_name = c1.text_input(
+                f"bench_{idx}",
+                value=default_bench,
+                key=f"row_bench_{idx}",
+                label_visibility="collapsed",
+            ).strip()
+
+        bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
+        bench_case_labels = [item.get("label", "").strip() for item in bench_case_types if item.get("label")]
+        if quick_filter_text:
+            bench_case_labels = [opt for opt in bench_case_labels if quick_filter_text in opt.lower()]
+        if not bench_case_labels:
+            bench_case_labels = [item.get("label", "").strip() for item in CASE_TYPES_BY_BENCH.get(bench_name, []) if item.get("label")]
+
+        default_case_type = str(row.get("case_type", "") or "")
+        if default_case_type and default_case_type not in bench_case_labels:
+            bench_case_labels = [default_case_type] + bench_case_labels
+        if not bench_case_labels:
+            bench_case_labels = [""]
+        ct_idx = bench_case_labels.index(default_case_type) if default_case_type in bench_case_labels else 0
+        case_type = c2.selectbox(
+            f"case_type_{idx}",
+            options=bench_case_labels,
+            index=ct_idx,
+            key=f"row_case_type_{idx}",
+            label_visibility="collapsed",
+        )
+
+        no = c3.text_input(
+            f"no_{idx}",
+            value=str(row.get("no", "") or ""),
+            key=f"row_no_{idx}",
+            label_visibility="collapsed",
+        ).strip()
+        year = c4.text_input(
+            f"year_{idx}",
+            value=str(row.get("year", "") or ""),
+            key=f"row_year_{idx}",
+            label_visibility="collapsed",
+        ).strip()
+
+        row_inputs.append({"bench": bench_name, "case_type": case_type, "no": no, "year": year})
+
+    st.session_state["case_rows"] = row_inputs
 
     parsed_cases = []
     parse_errors = []
-    for idx, row in cases_df.iterrows():
-        bench_name = "" if pd.isna(row.get("bench")) else str(row.get("bench")).strip()
-        case_type = "" if pd.isna(row.get("case_type")) else str(row.get("case_type")).strip()
-        no = "" if pd.isna(row.get("no")) else str(row.get("no")).strip()
-        year = "" if pd.isna(row.get("year")) else str(row.get("year")).strip()
+    for idx, row in enumerate(row_inputs, start=1):
+        bench_name = str(row.get("bench", "") or "").strip()
+        case_type = str(row.get("case_type", "") or "").strip()
+        no = str(row.get("no", "") or "").strip()
+        year = str(row.get("year", "") or "").strip()
 
         if not bench_name and not case_type and not no and not year:
             continue
         if not (bench_name and case_type and no and year):
-            parse_errors.append(f"Row {idx + 1}: fill all columns (bench, case_type, no, year)")
+            parse_errors.append(f"Row {idx}: fill all columns (bench, case_type, no, year)")
             continue
         if bench_map and bench_name not in bench_map:
-            parse_errors.append(f"Row {idx + 1}: invalid bench '{bench_name}' for selected High Court")
+            parse_errors.append(f"Row {idx}: invalid bench '{bench_name}' for selected High Court")
             continue
         bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
         label_to_value = {item.get("label"): item.get("value") for item in bench_case_types}
         value = label_to_value.get(case_type)
         if not value:
-            parse_errors.append(f"Row {idx + 1}: case_type '{case_type}' is not valid for bench '{bench_name}'")
+            parse_errors.append(f"Row {idx}: case_type '{case_type}' is not valid for bench '{bench_name}'")
             continue
         case_bench_code = bench_map[bench_name] if bench_map else bench_name
         parsed_cases.append(
