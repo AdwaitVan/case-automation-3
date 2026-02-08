@@ -1,5 +1,6 @@
 ## Connection Check: VS Code is synced!
 import base64
+import html
 import io
 import json
 import os
@@ -82,8 +83,31 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
-    # Keep terminal visually stable and always show latest lines (tail behavior).
-    placeholder.code("\n".join(logs[-200:]), language="bash")
+    rendered = html.escape("\n".join(logs[-300:]))
+    placeholder.empty()
+    with placeholder.container():
+        components.html(
+            f"""
+<div id="live_terminal" style="
+  height:260px;
+  overflow-y:auto;
+  border:1px solid #dfe3e8;
+  border-radius:8px;
+  background:#f5f7fb;
+  color:#1f2937;
+  padding:10px 12px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:14px;
+  line-height:1.4;
+  white-space:pre-wrap;
+">{rendered}</div>
+<script>
+  const box = document.getElementById("live_terminal");
+  if (box) {{ box.scrollTop = box.scrollHeight; }}
+</script>
+""",
+            height=280,
+        )
 
 
 def ensure_dir(path: Path):
@@ -127,6 +151,17 @@ def build_debug_zip_bytes(debug_dir: Path):
             zf.write(file_path, arcname=file_path.name)
     buf.seek(0)
     return buf.getvalue()
+
+
+def render_fetch_timer(timer_placeholder, start_time, total_cases, current_case_index):
+    if timer_placeholder is None or start_time is None:
+        return
+    elapsed = max(time.time() - start_time, 0.0)
+    mm = int(elapsed // 60)
+    ss = int(elapsed % 60)
+    timer_placeholder.caption(
+        f"Fetching timer: {mm:02d}:{ss:02d} | Case {current_case_index}/{max(total_cases, 1)}"
+    )
 
 
 def solve_captcha(page, case_slug, attempt, debug_mode, debug_dir, placeholder, logs):
@@ -236,6 +271,8 @@ def run_bot(
     terminal_placeholder,
     default_sess_state_code="1",
     default_court_complex_code="1",
+    timer_placeholder=None,
+    fetch_start_time=None,
     debug_mode=False,
     debug_dir=Path("debug_artifacts"),
 ):
@@ -261,7 +298,9 @@ def run_bot(
         page = context.new_page()
         page.set_default_timeout(60000)
 
-        for case in cases:
+        total_cases = len(cases)
+        for case_index, case in enumerate(cases, start=1):
+            render_fetch_timer(timer_placeholder, fetch_start_time, total_cases, case_index)
             case_label = f"{case['name']} {case['no']}/{case['year']}"
             case_slug = f"{case['name']}_{case['no']}_{case['year']}"
             row_no = case.get("source_row")
@@ -273,6 +312,7 @@ def run_bot(
             for attempt in range(1, MAX_RETRIES + 1):
                 try:
                     update_terminal(f"[attempt {attempt}/{MAX_RETRIES}] open page", terminal_placeholder, logs)
+                    render_fetch_timer(timer_placeholder, fetch_start_time, total_cases, case_index)
                     try:
                         page.goto(URL, timeout=60000, wait_until="domcontentloaded")
                     except Exception:
@@ -425,6 +465,7 @@ def run_bot(
                 }
             )
             time.sleep(1)
+            render_fetch_timer(timer_placeholder, fetch_start_time, total_cases, case_index)
 
         browser.close()
         update_terminal("[done] finished", terminal_placeholder, logs)
@@ -476,9 +517,6 @@ with main_col:
     bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
     bench_options = list(bench_map.keys()) if bench_map else []
     default_row_bench = "Appellate Side,Bombay" if "Appellate Side,Bombay" in bench_options else ""
-    bench_display_map = {"Bombay High Court,Bench at Kolhapur": "Bench of Kolhapur"}
-    bench_display_options = [bench_display_map.get(b, b) for b in bench_options]
-    display_to_bench = {bench_display_map.get(b, b): b for b in bench_options}
     quick_filter_text = st.text_input(
         "Case Type Search",
         value="",
@@ -545,11 +583,10 @@ with main_col:
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
-            bench_choice_options = ["Choose Option"] + bench_display_options
-            default_bench_display = bench_display_map.get(default_bench, default_bench)
+            bench_choice_options = ["Choose Option"] + bench_options
             bench_idx = (
-                bench_choice_options.index(default_bench_display)
-                if default_bench_display in bench_choice_options
+                bench_choice_options.index(default_bench)
+                if default_bench in bench_choice_options
                 else 0
             )
             bench_name_display = c1.selectbox(
@@ -564,7 +601,7 @@ with main_col:
             if bench_name_display == "Choose Option":
                 bench_name = ""
             else:
-                bench_name = display_to_bench.get(bench_name_display, "")
+                bench_name = bench_name_display
         else:
             bench_name = c1.text_input(
                 f"bench_{idx}",
@@ -726,12 +763,12 @@ with bg_col:
         st.caption("No run history yet.")
 
     st.subheader("Background")
-    st.caption("ignore")
     default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
     default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
     debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
     debug_dir = Path(st.text_input("Diagnostics folder", value=default_debug_dir).strip() or "debug_artifacts")
     st.caption("Live terminal logs")
+    timer_placeholder = st.empty()
     terminal = st.empty()
 
     last_run_logs = st.session_state.get("last_run_logs", [])
@@ -775,9 +812,12 @@ if fetch_orders or run_single_retry:
         terminal,
         default_sess_state_code=selected_hc_code,
         default_court_complex_code="1",
+        timer_placeholder=timer_placeholder,
+        fetch_start_time=t0,
         debug_mode=debug_mode,
         debug_dir=debug_dir,
     )
+    timer_placeholder.empty()
     elapsed = max(time.time() - t0, 1.0)
     per_case = elapsed / max(len(run_cases), 1)
     old_avg = float(st.session_state.get("avg_case_seconds", 35.0))
