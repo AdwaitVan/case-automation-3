@@ -1,6 +1,7 @@
 ## Connection Check: VS Code is synced!
 import base64
 import io
+import json
 import os
 import re
 import time
@@ -22,10 +23,7 @@ if not hasattr(Image, "ANTIALIAS") and hasattr(Image, "Resampling"):
 
 URL = "https://hcservices.ecourts.gov.in/hcservices/main.php"
 MAX_RETRIES = 5
-CASE_TYPE_TO_VALUE = {
-    "writ petition": "1",
-    "second appeal": "4",
-}
+CASE_TYPES_FILE = Path(__file__).with_name("bench_case_types.json")
 HIGH_COURTS = {
     "Allahabad High Court": "13",
     "Bombay High Court": "1",
@@ -64,6 +62,21 @@ BENCHES_BY_HIGH_COURT = {
         "Special Court (TORTS) Bombay": "6",
     }
 }
+
+
+def load_case_types_by_bench(path: Path):
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        return {}
+    return {}
+
+
+CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 
 
 def update_terminal(message, placeholder, logs):
@@ -220,8 +233,8 @@ def get_latest_order_link(html_content):
 def run_bot(
     cases,
     terminal_placeholder,
-    sess_state_code="1",
-    court_complex_code="1",
+    default_sess_state_code="1",
+    default_court_complex_code="1",
     debug_mode=False,
     debug_dir=Path("debug_artifacts"),
 ):
@@ -272,9 +285,11 @@ def run_bot(
                     except Exception:
                         page.evaluate("document.querySelector('#leftPaneMenuCS').click()")
 
-                    page.select_option("#sess_state_code", value=sess_state_code)
+                    case_sess_state_code = case.get("sess_state_code", default_sess_state_code)
+                    case_court_complex_code = case.get("court_complex_code", default_court_complex_code)
+                    page.select_option("#sess_state_code", value=case_sess_state_code)
                     time.sleep(1)
-                    page.select_option("#court_complex_code", value=court_complex_code)
+                    page.select_option("#court_complex_code", value=case_court_complex_code)
                     time.sleep(1)
 
                     try:
@@ -403,62 +418,125 @@ main_col, bg_col = st.columns([2, 1], gap="large")
 
 with main_col:
     st.subheader("Main")
-    hc_col, bench_col = st.columns(2)
-    with hc_col:
-        high_court_name = st.selectbox(
-            "High Court",
-            options=list(HIGH_COURTS.keys()),
-            index=list(HIGH_COURTS.keys()).index("Bombay High Court"),
-        )
+    high_court_name = st.selectbox(
+        "High Court",
+        options=list(HIGH_COURTS.keys()),
+        index=list(HIGH_COURTS.keys()).index("Bombay High Court"),
+    )
     selected_hc_code = HIGH_COURTS[high_court_name]
-
     bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
-    with bench_col:
-        if bench_map:
-            bench_name = st.selectbox(
-                "Bench",
-                options=list(bench_map.keys()),
-                index=list(bench_map.keys()).index("Appellate Side,Bombay")
-                if "Appellate Side,Bombay" in bench_map
-                else 0,
-            )
-            selected_bench_code = bench_map[bench_name]
-        else:
-            selected_bench_code = st.text_input("Bench Code", value="1").strip() or "1"
-            st.caption("Bench list is not configured for this High Court yet. Enter bench code manually.")
+    bench_options = list(bench_map.keys()) if bench_map else []
+    case_type_union = sorted(
+        {
+            item.get("label", "").strip()
+            for bench_name in bench_options
+            for item in CASE_TYPES_BY_BENCH.get(bench_name, [])
+            if item.get("label")
+        }
+    )
 
-    st.caption("Enter case details in the table below. Columns: `case_type`, `no`, `year`.")
-    st.caption(f"Supported case types: {', '.join(sorted(CASE_TYPE_TO_VALUE.keys()))}")
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        quick_filter_bench = st.selectbox(
+            "Case Type Filter Bench",
+            options=["All benches"] + bench_options,
+            index=0,
+            help="Use this to narrow case-type dropdown options while entering rows.",
+        )
+    with filter_col2:
+        quick_filter_text = st.text_input(
+            "Case Type Search",
+            value="",
+            help="Type part of case type, e.g. WP, SA, contempt, arbitration",
+        ).strip().lower()
+
+    if quick_filter_bench == "All benches":
+        base_case_type_options = case_type_union
+    else:
+        base_case_type_options = sorted(
+            {
+                item.get("label", "").strip()
+                for item in CASE_TYPES_BY_BENCH.get(quick_filter_bench, [])
+                if item.get("label")
+            }
+        )
+
+    if quick_filter_text:
+        filtered_case_type_options = [opt for opt in base_case_type_options if quick_filter_text in opt.lower()]
+    else:
+        filtered_case_type_options = base_case_type_options
+
+    if not filtered_case_type_options and quick_filter_text:
+        st.warning("No case types match this quick filter. Showing unfiltered list.")
+        case_type_dropdown_options = base_case_type_options
+    else:
+        case_type_dropdown_options = filtered_case_type_options
+
+    st.caption("One row = one case. Use per-row `bench` and `case_type` dropdowns.")
+    if not bench_map:
+        st.warning("Bench list for this High Court is not configured yet. Enter bench code in `bench` column (e.g., 1, 3, 4...).")
+    elif not case_type_union:
+        st.warning("No static case-type mapping loaded for this High Court/bench set.")
     default_cases_table = [
-        {"case_type": "Second Appeal", "no": "508", "year": "1999"},
-        {"case_type": "Writ Petition", "no": "11311", "year": "2025"},
+        {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
+        {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
     ]
+    bench_column_config = (
+        st.column_config.SelectboxColumn("bench", options=bench_options, required=True)
+        if bench_map
+        else st.column_config.TextColumn("bench", required=True)
+    )
+    case_type_column_config = (
+        st.column_config.SelectboxColumn("case_type", options=case_type_dropdown_options, required=True)
+        if case_type_dropdown_options
+        else st.column_config.TextColumn("case_type", required=True)
+    )
     cases_df = st.data_editor(
         pd.DataFrame(default_cases_table),
         hide_index=True,
         num_rows="dynamic",
         use_container_width=True,
+        column_config={
+            "bench": bench_column_config,
+            "case_type": case_type_column_config,
+            "no": st.column_config.TextColumn("no", required=True),
+            "year": st.column_config.TextColumn("year", required=True),
+        },
     )
 
     parsed_cases = []
     parse_errors = []
     for idx, row in cases_df.iterrows():
+        bench_name = "" if pd.isna(row.get("bench")) else str(row.get("bench")).strip()
         case_type = "" if pd.isna(row.get("case_type")) else str(row.get("case_type")).strip()
         no = "" if pd.isna(row.get("no")) else str(row.get("no")).strip()
         year = "" if pd.isna(row.get("year")) else str(row.get("year")).strip()
 
-        if not case_type and not no and not year:
+        if not bench_name and not case_type and not no and not year:
             continue
-        if not (case_type and no and year):
-            parse_errors.append(f"Row {idx + 1}: fill all columns (case_type, no, year)")
+        if not (bench_name and case_type and no and year):
+            parse_errors.append(f"Row {idx + 1}: fill all columns (bench, case_type, no, year)")
             continue
-        value = CASE_TYPE_TO_VALUE.get(case_type.lower())
+        if bench_map and bench_name not in bench_map:
+            parse_errors.append(f"Row {idx + 1}: invalid bench '{bench_name}' for selected High Court")
+            continue
+        bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
+        label_to_value = {item.get("label"): item.get("value") for item in bench_case_types}
+        value = label_to_value.get(case_type)
         if not value:
-            parse_errors.append(
-                f"Row {idx + 1}: unsupported case_type '{case_type}'. Use one of: {', '.join(sorted(CASE_TYPE_TO_VALUE.keys()))}"
-            )
+            parse_errors.append(f"Row {idx + 1}: case_type '{case_type}' is not valid for bench '{bench_name}'")
             continue
-        parsed_cases.append({"name": case_type, "value": value, "no": no, "year": year})
+        case_bench_code = bench_map[bench_name] if bench_map else bench_name
+        parsed_cases.append(
+            {
+                "name": case_type,
+                "value": value,
+                "no": no,
+                "year": year,
+                "sess_state_code": selected_hc_code,
+                "court_complex_code": case_bench_code,
+            }
+        )
 
     if parse_errors:
         for err in parse_errors:
@@ -497,8 +575,8 @@ if fetch_orders:
     results = run_bot(
         parsed_cases,
         terminal,
-        sess_state_code=selected_hc_code,
-        court_complex_code=selected_bench_code,
+        default_sess_state_code=selected_hc_code,
+        default_court_complex_code="1",
         debug_mode=debug_mode,
         debug_dir=debug_dir,
     )

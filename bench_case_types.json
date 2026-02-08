@@ -1,0 +1,3040 @@
+{
+  "Appellate Side,Bombay": [
+    {
+      "value": "332",
+      "label": "ABA(Cr. Anticipatory Bail Appln.)-332"
+    },
+    {
+      "value": "335",
+      "label": "ALP(Appln for Leave to Appeal(PVT.))-335"
+    },
+    {
+      "value": "334",
+      "label": "ALS(Appln For Leave to Appeal(STATE))-334"
+    },
+    {
+      "value": "3",
+      "label": "AO(Appeal from Order)-3"
+    },
+    {
+      "value": "310",
+      "label": "APEAL(Cr. Appeal)-310"
+    },
+    {
+      "value": "330",
+      "label": "APL(Criminal Appln. U/s 482)-330"
+    },
+    {
+      "value": "321",
+      "label": "APPA(Cr. Application in Appeal)-321"
+    },
+    {
+      "value": "327",
+      "label": "APPCO(Application in Cr. Conf.)-327"
+    },
+    {
+      "value": "326",
+      "label": "APPCP(Application in Cr. Cont. Petn.)-326"
+    },
+    {
+      "value": "324",
+      "label": "APPCR(Application In Cr. Reference)-324"
+    },
+    {
+      "value": "325",
+      "label": "APPI(Application in Cr. PIL)-325"
+    },
+    {
+      "value": "302",
+      "label": "APPLN(Cr. Application)-302"
+    },
+    {
+      "value": "323",
+      "label": "APPP(Cr. Application in Application)-323"
+    },
+    {
+      "value": "322",
+      "label": "APPR(Cr. Application in Revision)-322"
+    },
+    {
+      "value": "329",
+      "label": "APPSC(Application In Cr. SUO-MOTO CONP)-329"
+    },
+    {
+      "value": "320",
+      "label": "APPW(Cr. Application in Writ Petition)-320"
+    },
+    {
+      "value": "15",
+      "label": "ARA(Arb. Apeal  u/s 37 of  Arb.  Conc. 96)-15"
+    },
+    {
+      "value": "13",
+      "label": "ARP(Arbitration Petition)-13"
+    },
+    {
+      "value": "99",
+      "label": "AULPA(LPA(AURANGABAD))-99"
+    },
+    {
+      "value": "331",
+      "label": "BA(Criminal Bail Appln.)-331"
+    },
+    {
+      "value": "18",
+      "label": "CA(Civil Application)-18"
+    },
+    {
+      "value": "32",
+      "label": "CAA(Civil Application in AO)-32"
+    },
+    {
+      "value": "35",
+      "label": "CAC(Civil Application in CRA)-35"
+    },
+    {
+      "value": "50",
+      "label": "CAE(Civil Application in C.REF)-50"
+    },
+    {
+      "value": "31",
+      "label": "CAF(Civil Application in FA)-31"
+    },
+    {
+      "value": "67",
+      "label": "CAFM(Civil Application In FEMA)-67"
+    },
+    {
+      "value": "49",
+      "label": "CAI(Civil Application in PIL)-49"
+    },
+    {
+      "value": "34",
+      "label": "CAL(Civil Application in LPA)-34"
+    },
+    {
+      "value": "36",
+      "label": "CAM(Civil Application in FCA)-36"
+    },
+    {
+      "value": "37",
+      "label": "CAN(Civil Application in CP)-37"
+    },
+    {
+      "value": "41",
+      "label": "CAO(CA in Oth.(MCA/TXA/CA/FERA))-41"
+    },
+    {
+      "value": "39",
+      "label": "CAP(Civil Appl. in ARP)-39"
+    },
+    {
+      "value": "12",
+      "label": "CAPL(Contempt Appeal)-12"
+    },
+    {
+      "value": "40",
+      "label": "CAR(Civil Appln. in ARA)-40"
+    },
+    {
+      "value": "33",
+      "label": "CAS(Civil Application in SA)-33"
+    },
+    {
+      "value": "38",
+      "label": "CAT(Civil Application in CAPL)-38"
+    },
+    {
+      "value": "30",
+      "label": "CAW(Civil Application in WP)-30"
+    },
+    {
+      "value": "60",
+      "label": "CAY(Civil Application in FERA)-60"
+    },
+    {
+      "value": "344",
+      "label": "CCAPL(COMMERCIAL CONTEMPT APPEAL)-344"
+    },
+    {
+      "value": "318",
+      "label": "CCNO(Supreme Ct. Cr. C. C. NO.)-318"
+    },
+    {
+      "value": "57",
+      "label": "CCNO(Supreme Ct. C. C. NO.)-57"
+    },
+    {
+      "value": "348",
+      "label": "CCPDJ(CIVIL CONTEMPT PETITION BY DISTRICT JUDICIARY)-348"
+    },
+    {
+      "value": "340",
+      "label": "COARA(COMMERCIAL ARBITRATION APPEAL)-340"
+    },
+    {
+      "value": "342",
+      "label": "COARP(COMMERCIAL ARBITRATION PETITION)-342"
+    },
+    {
+      "value": "341",
+      "label": "COMAO(COMMERICAL AO)-341"
+    },
+    {
+      "value": "343",
+      "label": "COMCP(COMMERCIAL CONTEMPT PETITION)-343"
+    },
+    {
+      "value": "339",
+      "label": "COMFA(COMMERCIAL FA)-339"
+    },
+    {
+      "value": "345",
+      "label": "COMRP(REVIEW PETITION IN COMMERCIAL FA/ARA/AO/ARP/CP/CA)-345"
+    },
+    {
+      "value": "301",
+      "label": "CONF(Cr. Confirmation Case)-301"
+    },
+    {
+      "value": "312",
+      "label": "CONP(Cr. Contempt Petition)-312"
+    },
+    {
+      "value": "346",
+      "label": "COXOB(CROSS OBJECTION IN COMMERCIAL FA/ARA/AO/ARP/CP/CA)-346"
+    },
+    {
+      "value": "10",
+      "label": "CP(Cont. Petition)-10"
+    },
+    {
+      "value": "7",
+      "label": "CRA(Civil Revision Application)-7"
+    },
+    {
+      "value": "9",
+      "label": "C.REF(Civil References)-9"
+    },
+    {
+      "value": "319",
+      "label": "CRPIL(Public Interest Litigation)-319"
+    },
+    {
+      "value": "63",
+      "label": "CRR(Court Receiver Report)-63"
+    },
+    {
+      "value": "2",
+      "label": "FA(First Appeal)-2"
+    },
+    {
+      "value": "98",
+      "label": "FAG(First Appeal (GOA))-98"
+    },
+    {
+      "value": "8",
+      "label": "FCA(Family Court Appeal)-8"
+    },
+    {
+      "value": "66",
+      "label": "FEMA(FEMA APPEAL)-66"
+    },
+    {
+      "value": "58",
+      "label": "FERA(FERA Appeal)-58"
+    },
+    {
+      "value": "349",
+      "label": "F.NO.(F.NO.)-349"
+    },
+    {
+      "value": "316",
+      "label": "IA(Supreme Ct. Cr. Introlocatory Applicaton)-316"
+    },
+    {
+      "value": "337",
+      "label": "IA(CRI-INTERIM APPLICATION)-337"
+    },
+    {
+      "value": "69",
+      "label": "IA(INTERIM APPLICATION)-69"
+    },
+    {
+      "value": "55",
+      "label": "IA(Supreme Ct. Intolocatory Application)-55"
+    },
+    {
+      "value": "5",
+      "label": "LPA(Letter Patent Appeal)-5"
+    },
+    {
+      "value": "11",
+      "label": "MCA(Misc.Civil Application)-11"
+    },
+    {
+      "value": "62",
+      "label": "MPA(Marraige Petition(A))-62"
+    },
+    {
+      "value": "6",
+      "label": "PIL(Public Interest Litigation)-6"
+    },
+    {
+      "value": "29",
+      "label": "RAP(Review Petition in ARA)-29"
+    },
+    {
+      "value": "43",
+      "label": "RC(Rejected Case)-43"
+    },
+    {
+      "value": "311",
+      "label": "REF(Cr. Reference)-311"
+    },
+    {
+      "value": "309",
+      "label": "REVN(Cr. Revision Appln.)-309"
+    },
+    {
+      "value": "328",
+      "label": "REVW(Criminal Review)-328"
+    },
+    {
+      "value": "21",
+      "label": "RPA(Review Petn. in AO)-21"
+    },
+    {
+      "value": "24",
+      "label": "RPC(Review Petn. in CRA)-24"
+    },
+    {
+      "value": "20",
+      "label": "RPF(Review Pent. in FA)-20"
+    },
+    {
+      "value": "68",
+      "label": "RPFM(Review Petition In FEMA Appeal)-68"
+    },
+    {
+      "value": "51",
+      "label": "RPI(Review Petition In PIL)-51"
+    },
+    {
+      "value": "338",
+      "label": "RPIA(REVIEW PETITION IN IA)-338"
+    },
+    {
+      "value": "70",
+      "label": "RPIA(REVIEW PETITION IN IA)-70"
+    },
+    {
+      "value": "23",
+      "label": "RPL(Review Petn. in LPA)-23"
+    },
+    {
+      "value": "25",
+      "label": "RPM(Review Petn. in FCA)-25"
+    },
+    {
+      "value": "26",
+      "label": "RPN(Review Petn. in CP)-26"
+    },
+    {
+      "value": "28",
+      "label": "RPR(Review Petn. in ARP)-28"
+    },
+    {
+      "value": "22",
+      "label": "RPS(Review Petn. in SA)-22"
+    },
+    {
+      "value": "27",
+      "label": "RPT(Review Petn. in CAPL)-27"
+    },
+    {
+      "value": "48",
+      "label": "RPV(Review Petition in MCA)-48"
+    },
+    {
+      "value": "19",
+      "label": "RPW(Review Petn. in WP)-19"
+    },
+    {
+      "value": "4",
+      "label": "SA(Second Appeal)-4"
+    },
+    {
+      "value": "314",
+      "label": "SCAP(Supreme Ct. Criminal Apeal)-314"
+    },
+    {
+      "value": "53",
+      "label": "SCAP(Supreme Ct. Civil Apeal)-53"
+    },
+    {
+      "value": "16",
+      "label": "SCCA(CA for Leave to Appeal to Supreme Court)-16"
+    },
+    {
+      "value": "56",
+      "label": "SCCP(Supreme Ct. Contempt Petition)-56"
+    },
+    {
+      "value": "317",
+      "label": "SCCP(Supreme Ct. Cr. Contempt Petition)-317"
+    },
+    {
+      "value": "54",
+      "label": "SCMP(Supreme Ct. Misc. Petition)-54"
+    },
+    {
+      "value": "315",
+      "label": "SCMP(Supreme Ct. Cr. Misc. Petition)-315"
+    },
+    {
+      "value": "61",
+      "label": "SCTP(Supreme Ct. Transfer Petition)-61"
+    },
+    {
+      "value": "333",
+      "label": "SCTP(Supreme Ct. Transfer Petition(CR))-333"
+    },
+    {
+      "value": "313",
+      "label": "SLP(Supreme Ct. Cr. Special Leave Petition)-313"
+    },
+    {
+      "value": "52",
+      "label": "SLP(Supreme Ct. Special Leave Petition)-52"
+    },
+    {
+      "value": "304",
+      "label": "SMAP(Cr. Suo-Motu Application)-304"
+    },
+    {
+      "value": "307",
+      "label": "SMCP(Cr. Suo-Motu Contempt Petn.)-307"
+    },
+    {
+      "value": "347",
+      "label": "SMCPC(Civil Suo Motu Contempt Petition)-347"
+    },
+    {
+      "value": "59",
+      "label": "SMP(Suo-Moto Petition)-59"
+    },
+    {
+      "value": "336",
+      "label": "SMP(Suo-Motu Cr. PIL)-336"
+    },
+    {
+      "value": "65",
+      "label": "SMPIL(Suo Motuo PIL)-65"
+    },
+    {
+      "value": "306",
+      "label": "SMRN(Cr. Suo-Motu Revision Appln.)-306"
+    },
+    {
+      "value": "64",
+      "label": "SMWP(Suo Motu Writ Petition)-64"
+    },
+    {
+      "value": "305",
+      "label": "SMWP(Cr. Suo-Motu Writ Petition)-305"
+    },
+    {
+      "value": "303",
+      "label": "SOMO(Cr. Suo-Motu Petition)-303"
+    },
+    {
+      "value": "17",
+      "label": "SPLCA(Special Civil Application)-17"
+    },
+    {
+      "value": "14",
+      "label": "TXA(Tax Appeal)-14"
+    },
+    {
+      "value": "308",
+      "label": "WP(Cr. Writ Petition)-308"
+    },
+    {
+      "value": "1",
+      "label": "WP(Writ Petition)-1"
+    },
+    {
+      "value": "45",
+      "label": "WPA(WRIT PETITION - AURANGABAD)-45"
+    },
+    {
+      "value": "46",
+      "label": "WPG(WRIT PETITION - GOA)-46"
+    },
+    {
+      "value": "47",
+      "label": "WPN(WRIT PETITION - NAGPUR)-47"
+    },
+    {
+      "value": "44",
+      "label": "XFER(TRANSFER MATTER)-44"
+    },
+    {
+      "value": "42",
+      "label": "XOB(Cross Objection Stamp)-42"
+    }
+  ],
+  "Original Side,Bombay": [
+    {
+      "value": "502",
+      "label": "ADMS(ADMIRALTY SUITS)-502"
+    },
+    {
+      "value": "606",
+      "label": "AEP(APPLN. IN ELECTION PETITION)-606"
+    },
+    {
+      "value": "544",
+      "label": "AITR(AGRICULTURAL INCOME TAX REFERENCE)-544"
+    },
+    {
+      "value": "565",
+      "label": "APP(APPEALS)-565"
+    },
+    {
+      "value": "620",
+      "label": "ARAPP(ARBITRATION APPEAL)-620"
+    },
+    {
+      "value": "511",
+      "label": "ARBAP(ARBITRATION APPLICATION)-511"
+    },
+    {
+      "value": "510",
+      "label": "ARBP(ARBITRATION PETITION)-510"
+    },
+    {
+      "value": "508",
+      "label": "ARBS(ARBITRATION SUITS)-508"
+    },
+    {
+      "value": "621",
+      "label": "ASWP(APPELLATE SIDE WRIT PETITION)-621"
+    },
+    {
+      "value": "622",
+      "label": "AURWP(WRIT PETITION (AURANGABAD))-622"
+    },
+    {
+      "value": "608",
+      "label": "AW(AWARDS)-608"
+    },
+    {
+      "value": "656",
+      "label": "BIFR(BIFR)-656"
+    },
+    {
+      "value": "564",
+      "label": "CA(COMPANY APPLICATION)-564"
+    },
+    {
+      "value": "701",
+      "label": "CAA(COMPANY APPLICATION IN APEAL)-701"
+    },
+    {
+      "value": "671",
+      "label": "CAPP(CHARTERED ACCOUNTANT APPEAL)-671"
+    },
+    {
+      "value": "545",
+      "label": "CAR(CHARTERED A/C REFERENCE)-545"
+    },
+    {
+      "value": "738",
+      "label": "CARAP(Commercial Arbitration Application)-738"
+    },
+    {
+      "value": "745",
+      "label": "CARBA(Commercial Arbitration Appeal)-745"
+    },
+    {
+      "value": "743",
+      "label": "CARBP(Commercial Arbitration Petition)-743"
+    },
+    {
+      "value": "623",
+      "label": "CASE(CASE)-623"
+    },
+    {
+      "value": "507",
+      "label": "CC(COUNTER CLAIM)-507"
+    },
+    {
+      "value": "711",
+      "label": "CCP(COUNTER CLAIM(PARSI))-711"
+    },
+    {
+      "value": "714",
+      "label": "CCPC(Criminal Cont. Petn.(Company))-714"
+    },
+    {
+      "value": "536",
+      "label": "CEA(CENTRAL EXCISE APPLICATION)-536"
+    },
+    {
+      "value": "543",
+      "label": "CER(CENTRAL EXCISE REFERENCE)-543"
+    },
+    {
+      "value": "624",
+      "label": "CEXA(CENTRAL EXCISE APPEAL)-624"
+    },
+    {
+      "value": "611",
+      "label": "CHOCL(CHAMBER ORDER LODG.(COND.OF DELAY))-611"
+    },
+    {
+      "value": "909",
+      "label": "CHOIN(CHAMBER ORDER IN INSOLVECY)-909"
+    },
+    {
+      "value": "610",
+      "label": "CHOL(CHAMBER ORDER)-610"
+    },
+    {
+      "value": "586",
+      "label": "CHS(CHAMBER SUMMONS)-586"
+    },
+    {
+      "value": "750",
+      "label": "CHSCA(Chamber Summons in Commercial Appellate Division matters)-750"
+    },
+    {
+      "value": "749",
+      "label": "CHSCD(Chamber Summons in Commercial Division matters)-749"
+    },
+    {
+      "value": "625",
+      "label": "CHSP(CHAMBER SUMMONS (PROTHONOTARY))-625"
+    },
+    {
+      "value": "626",
+      "label": "CHSPM(CHAMBER SUMMONS(PARSI SUITS))-626"
+    },
+    {
+      "value": "597",
+      "label": "CHSW(CHAMBER SUMMONS IN WRIT PETITION.)-597"
+    },
+    {
+      "value": "589",
+      "label": "CN(CONTEMPT NOTICE)-589"
+    },
+    {
+      "value": "576",
+      "label": "CNPCP(CONTEMPT PETITION(COMPANY PETN.))-576"
+    },
+    {
+      "value": "600",
+      "label": "CNW(CONTEMPT NOTICE(WRIT PETITION))-600"
+    },
+    {
+      "value": "577",
+      "label": "COAPP(COMPANY APPEAL)-577"
+    },
+    {
+      "value": "583",
+      "label": "COEX(CONTEMPT PETITION IN EXECUTION)-583"
+    },
+    {
+      "value": "719",
+      "label": "COI(Chamber Order(Insolvency))-719"
+    },
+    {
+      "value": "739",
+      "label": "COMAP(Commercial Appeal)-739"
+    },
+    {
+      "value": "758",
+      "label": "COMAS(COMMERCIAL ADMIRALTY SUITS)-758"
+    },
+    {
+      "value": "755",
+      "label": "COMEX(COMMERCIAL EXECUTION APPLICATION)-755"
+    },
+    {
+      "value": "759",
+      "label": "COMIP(COMMERCIAL INTELLECTUAL PROPERTY RIGHTS SUITS)-759"
+    },
+    {
+      "value": "761",
+      "label": "COMMP(COMMERCIAL MISCELLANEOUS PETITION)-761"
+    },
+    {
+      "value": "604",
+      "label": "COMP(COMPLAINTS (IN COMPANY PETITION))-604"
+    },
+    {
+      "value": "742",
+      "label": "COMS(Commercial Suit)-742"
+    },
+    {
+      "value": "757",
+      "label": "COMSS(COMMERCIAL SUMMARY SUITS)-757"
+    },
+    {
+      "value": "569",
+      "label": "CONP(CONTEMPT PETITION)-569"
+    },
+    {
+      "value": "729",
+      "label": "CONPP(CONTEMPT PETITION IN PIL)-729"
+    },
+    {
+      "value": "574",
+      "label": "CONPW(CONTEMPT PETITION IN WRIT PETITION)-574"
+    },
+    {
+      "value": "674",
+      "label": "CONTP(CONTEMPT PETITION (TP))-674"
+    },
+    {
+      "value": "627",
+      "label": "COPP(CONTEMPET PETITION IN PARSI)-627"
+    },
+    {
+      "value": "563",
+      "label": "CP(COMPANY PETITION)-563"
+    },
+    {
+      "value": "754",
+      "label": "CPCAD(Contempt Petition in Commercial Appellate Division matters)-754"
+    },
+    {
+      "value": "741",
+      "label": "CPCAD(Contempt Petition in Commercial Appellate Division Matters)-741"
+    },
+    {
+      "value": "753",
+      "label": "CPCD(Contempt Petition in Commercial Division matters)-753"
+    },
+    {
+      "value": "740",
+      "label": "CPCD(Contempt Petition in Commercial Division Matters)-740"
+    },
+    {
+      "value": "705",
+      "label": "CPIN(Civil Contempt Petition(INPT))-705"
+    },
+    {
+      "value": "736",
+      "label": "CPP(Company Partnership Petition)-736"
+    },
+    {
+      "value": "697",
+      "label": "CPTP(Criminal Contempt Petition in TP)-697"
+    },
+    {
+      "value": "657",
+      "label": "CRCP(CRIMINAL CONTEMPT PETITION)-657"
+    },
+    {
+      "value": "676",
+      "label": "CRE(Court Receiver Execution)-676"
+    },
+    {
+      "value": "559",
+      "label": "CROL(CROSS OBJECTION LODGING)-559"
+    },
+    {
+      "value": "706",
+      "label": "CRPIN(Criminal Contempt Petition(INPT))-706"
+    },
+    {
+      "value": "675",
+      "label": "CRR(Court Receiver Report)-675"
+    },
+    {
+      "value": "699",
+      "label": "CSD(COMPANY SUMMONS FOR DIRECTION)-699"
+    },
+    {
+      "value": "700",
+      "label": "CSP(COMPANY SCHEME PETITION)-700"
+    },
+    {
+      "value": "555",
+      "label": "CSR(COMPANY SECRETARY REFERENCE)-555"
+    },
+    {
+      "value": "666",
+      "label": "CST(CHAMBER SUMMONS (TESTAMENTARY))-666"
+    },
+    {
+      "value": "534",
+      "label": "CTDA(CHARTERED ACCOUNTANTS APPLICATION.)-534"
+    },
+    {
+      "value": "725",
+      "label": "CTS(Caveat In Testamentry)-725"
+    },
+    {
+      "value": "628",
+      "label": "CUAPP(CUSTOM APPEAL)-628"
+    },
+    {
+      "value": "629",
+      "label": "CUSA(CUSTOMS APPLICATION LODGING)-629"
+    },
+    {
+      "value": "535",
+      "label": "CUSAL(CUSTOM APPLICATION LODGING.)-535"
+    },
+    {
+      "value": "533",
+      "label": "CUSTA(CUSTOMS ACT APPLICATION.)-533"
+    },
+    {
+      "value": "538",
+      "label": "CUSTD(CUSTOM DUTY APPLICATION)-538"
+    },
+    {
+      "value": "522",
+      "label": "CUSTP(CUSTODY PETITION)-522"
+    },
+    {
+      "value": "546",
+      "label": "CUSTR(CUSTOM DUTY REFERENCE)-546"
+    },
+    {
+      "value": "630",
+      "label": "CVT(CEVEAT)-630"
+    },
+    {
+      "value": "631",
+      "label": "DM(DISCIPLINARY MATTERS)-631"
+    },
+    {
+      "value": "632",
+      "label": "DNMS(DRAFT NOTICE OF MOTION (SUITS))-632"
+    },
+    {
+      "value": "633",
+      "label": "DNMW(DRAFT NOTICE OF MOTION (WRIT PETITION))-633"
+    },
+    {
+      "value": "634",
+      "label": "EDA(ESTATE DUTY TAX APPLICATION)-634"
+    },
+    {
+      "value": "527",
+      "label": "EDR(ESTATE DUTY TAX REFERENCE)-527"
+    },
+    {
+      "value": "509",
+      "label": "EP(ELECTION PETITION)-509"
+    },
+    {
+      "value": "553",
+      "label": "EPTR(EXCESS PROFIT TAX REFEENCE)-553"
+    },
+    {
+      "value": "554",
+      "label": "ETR(EXPENDITURE TAX REFERENCE)-554"
+    },
+    {
+      "value": "609",
+      "label": "EXA(EXECUTION APPLICATION)-609"
+    },
+    {
+      "value": "539",
+      "label": "EXDA(EXCISE DUTY APPLICATION)-539"
+    },
+    {
+      "value": "549",
+      "label": "EXDR(EXCISE DUTY REFERENCE)-549"
+    },
+    {
+      "value": "512",
+      "label": "FAP(FOREIGN ADOPTION PETITION)-512"
+    },
+    {
+      "value": "670",
+      "label": "FEMA(FEMA APPEAL)-670"
+    },
+    {
+      "value": "528",
+      "label": "GCA(GOLD CONTROL APPLICATION)-528"
+    },
+    {
+      "value": "548",
+      "label": "GCR(GOLD CONTROL REFERENCE)-548"
+    },
+    {
+      "value": "516",
+      "label": "GP(GUARDIANSHIP PETITION.)-516"
+    },
+    {
+      "value": "591",
+      "label": "GRN(GUARNISHEE NOTICE)-591"
+    },
+    {
+      "value": "532",
+      "label": "GTA(GIFT TAX APPLICATION)-532"
+    },
+    {
+      "value": "635",
+      "label": "GTR(GIFT TAX REFERENCE)-635"
+    },
+    {
+      "value": "602",
+      "label": "GTXA(GIFT TAX APPEAL)-602"
+    },
+    {
+      "value": "907",
+      "label": "IA(INTERIM APPLICATION)-907"
+    },
+    {
+      "value": "582",
+      "label": "IAAP(INTERIM ARBITRATION APPLICATION)-582"
+    },
+    {
+      "value": "526",
+      "label": "IAP(INDIAN ADOPTION PETITION)-526"
+    },
+    {
+      "value": "521",
+      "label": "IARBP(INTERIM ARBITRATION PETITION)-521"
+    },
+    {
+      "value": "737",
+      "label": "IC(Indian Companies)-737"
+    },
+    {
+      "value": "570",
+      "label": "ICONP(INTERIM CONTEMPT PETITION)-570"
+    },
+    {
+      "value": "517",
+      "label": "ICP(INT.CUST.PETITION.)-517"
+    },
+    {
+      "value": "660",
+      "label": "IDA(INSOLVENCY DISCHARGE APPLICATION)-660"
+    },
+    {
+      "value": "658",
+      "label": "IGP(INDIAN GUARDANSHIP PETITION)-658"
+    },
+    {
+      "value": "636",
+      "label": "ILP(INTERIM LUNANCY PETITION)-636"
+    },
+    {
+      "value": "523",
+      "label": "IMGP(INTERIM GUARDIAN PETITION)-523"
+    },
+    {
+      "value": "525",
+      "label": "IMHA(INTERIM MENTAL HEALTH ACT PETITION)-525"
+    },
+    {
+      "value": "520",
+      "label": "IMP(INTERIM MISC. PETITION)-520"
+    },
+    {
+      "value": "702",
+      "label": "INAP(Intervention Application)-702"
+    },
+    {
+      "value": "567",
+      "label": "INOT(INSOLVENCY NOTICE)-567"
+    },
+    {
+      "value": "514",
+      "label": "INPT(INSOLVENCY PETITION)-514"
+    },
+    {
+      "value": "637",
+      "label": "INSA(INSURANCE ACT)-637"
+    },
+    {
+      "value": "566",
+      "label": "INSP(INSOLVENCY PETITION)-566"
+    },
+    {
+      "value": "638",
+      "label": "IP(INT.PETITION.)-638"
+    },
+    {
+      "value": "734",
+      "label": "IPA(In Person Application)-734"
+    },
+    {
+      "value": "639",
+      "label": "IPMP(INTERIM PARSI MATRIMONIAL PETITION)-639"
+    },
+    {
+      "value": "659",
+      "label": "IRN(INSOLVENCY RULE NISI)-659"
+    },
+    {
+      "value": "617",
+      "label": "IRXA(INTEREST TAX APPEAL)-617"
+    },
+    {
+      "value": "530",
+      "label": "ITA(INCOME TAX APPLICATION)-530"
+    },
+    {
+      "value": "542",
+      "label": "ITR(INCOME TAX REFERENCE)-542"
+    },
+    {
+      "value": "601",
+      "label": "ITXA(INCOME TAX APPEAL(IT))-601"
+    },
+    {
+      "value": "664",
+      "label": "JO(JUDGES ORDER)-664"
+    },
+    {
+      "value": "721",
+      "label": "JOI(Judges Order(Insolvency))-721"
+    },
+    {
+      "value": "552",
+      "label": "JOT(JUDGES ORDER (TESTAMENTARY))-552"
+    },
+    {
+      "value": "672",
+      "label": "JOW(JUDGES ORDER (WRIT PETITION))-672"
+    },
+    {
+      "value": "613",
+      "label": "LAR(LAND ACQUISITION REFERENCE)-613"
+    },
+    {
+      "value": "519",
+      "label": "LP(LUNANCY PETITION)-519"
+    },
+    {
+      "value": "556",
+      "label": "LPETN(LEAVE PETITION)-556"
+    },
+    {
+      "value": "713",
+      "label": "LPW(LEAVE PETITION(WRIT))-713"
+    },
+    {
+      "value": "614",
+      "label": "MAPP(MISC.APPLICATION)-614"
+    },
+    {
+      "value": "640",
+      "label": "MCA(MISC.COM.APP)-640"
+    },
+    {
+      "value": "615",
+      "label": "MERC(MAHA. ELECTRICITY REGULATORY COMM.)-615"
+    },
+    {
+      "value": "524",
+      "label": "MHA(MENTAL HEALTH ACT PETITION)-524"
+    },
+    {
+      "value": "503",
+      "label": "MJS(MATRIMONIAL SUITS)-503"
+    },
+    {
+      "value": "515",
+      "label": "MP(MISC.PETITION.)-515"
+    },
+    {
+      "value": "703",
+      "label": "MPIN(Misc. Petition for leave)-703"
+    },
+    {
+      "value": "641",
+      "label": "MPP(MISC. PARSI PETITION)-641"
+    },
+    {
+      "value": "562",
+      "label": "MPT(MISC PETITION IN T and I J)-562"
+    },
+    {
+      "value": "642",
+      "label": "MS(MISFEASONS SUMMONSES)-642"
+    },
+    {
+      "value": "616",
+      "label": "MTA(MISC. TESTAMENTARY APPLN.)-616"
+    },
+    {
+      "value": "722",
+      "label": "MVXA(Mah. Value Added Tax Appeal)-722"
+    },
+    {
+      "value": "587",
+      "label": "N(NOTICE)-587"
+    },
+    {
+      "value": "643",
+      "label": "NAGWP(WRIT PETITION (NAGPUR))-643"
+    },
+    {
+      "value": "585",
+      "label": "NMA(NOTICE OF MOTION (APPEALS))-585"
+    },
+    {
+      "value": "644",
+      "label": "NMC(NOTICE OF MOTION  (COMPANY))-644"
+    },
+    {
+      "value": "748",
+      "label": "NMCA(Notice of Motion in Commercial Appellate Division matters)-748"
+    },
+    {
+      "value": "747",
+      "label": "NMCD(Notice of Motion in Commercial Division matters)-747"
+    },
+    {
+      "value": "645",
+      "label": "NMIS(NOTICE OF MOTION (INSOLVENCY))-645"
+    },
+    {
+      "value": "661",
+      "label": "NMISA(NM FOR SETTING ASIDE INSOL.NOTICE)-661"
+    },
+    {
+      "value": "584",
+      "label": "NMS(NOTICE OF MOTION (SUITS))-584"
+    },
+    {
+      "value": "646",
+      "label": "NMSP(NOTICE OF MOTION (PARSI SUIT))-646"
+    },
+    {
+      "value": "665",
+      "label": "NMT(NOTICE OF MOTION (TESTAMENTARY))-665"
+    },
+    {
+      "value": "596",
+      "label": "NMW(NOTICE OF MOTION  (WRIT PETITION))-596"
+    },
+    {
+      "value": "662",
+      "label": "OAR(OFFICIAL ASSIGNEES REPORT)-662"
+    },
+    {
+      "value": "716",
+      "label": "OLR(Official Liquidator Report)-716"
+    },
+    {
+      "value": "590",
+      "label": "ORGS(ORGINATING SUMMONS)-590"
+    },
+    {
+      "value": "715",
+      "label": "OTS(Obj. to Scheme(Company))-715"
+    },
+    {
+      "value": "647",
+      "label": "PCN(PARSI CONTEMPT NOTICE OF MOTION)-647"
+    },
+    {
+      "value": "731",
+      "label": "PEXA(PARSI EXECUTION APPLICATION)-731"
+    },
+    {
+      "value": "668",
+      "label": "PIL(PUBLIC INTEREST LITIGATION)-668"
+    },
+    {
+      "value": "730",
+      "label": "PMA(PARSI MISC. APPLICATION)-730"
+    },
+    {
+      "value": "648",
+      "label": "PMP(PARSI MATRIMONIAL PETITION)-648"
+    },
+    {
+      "value": "669",
+      "label": "PMTP(PARSI  MAINTENANCE  PETITION)-669"
+    },
+    {
+      "value": "592",
+      "label": "PN(PERJURY NOTICE)-592"
+    },
+    {
+      "value": "599",
+      "label": "PNW(PERJURY NOTICE ( WRIT PETITION))-599"
+    },
+    {
+      "value": "501",
+      "label": "PP(PAUPER PETITION)-501"
+    },
+    {
+      "value": "580",
+      "label": "PPA(PAUPER PETITION (APPEAL))-580"
+    },
+    {
+      "value": "710",
+      "label": "PPET(PARSI PETITION)-710"
+    },
+    {
+      "value": "723",
+      "label": "PPIN(Protection Petition(INPT))-723"
+    },
+    {
+      "value": "667",
+      "label": "PPT(PAUPER PETITION (TESTAMENTARY))-667"
+    },
+    {
+      "value": "581",
+      "label": "PRJP(PERJURY PETITION)-581"
+    },
+    {
+      "value": "505",
+      "label": "PS(PARSI SUITS)-505"
+    },
+    {
+      "value": "607",
+      "label": "PSC(PETI.FOR LEAVE TO APPEAL TO THE SUP.CRT)-607"
+    },
+    {
+      "value": "727",
+      "label": "RA(RESTORATION APPLICATION)-727"
+    },
+    {
+      "value": "649",
+      "label": "RAL(REFERENCE APPLICATION LODGING)-649"
+    },
+    {
+      "value": "677",
+      "label": "RCW(Rejected Case(OS-WP))-677"
+    },
+    {
+      "value": "650",
+      "label": "REP(REPORT)-650"
+    },
+    {
+      "value": "557",
+      "label": "RP(REVIEW PETITION)-557"
+    },
+    {
+      "value": "558",
+      "label": "RPA(REVIEW PETITION(APPEAL))-558"
+    },
+    {
+      "value": "579",
+      "label": "RPC(REVIEW PETITION (COMPANY))-579"
+    },
+    {
+      "value": "752",
+      "label": "RPCA(Review Petition in Commercial Appellate Division matters)-752"
+    },
+    {
+      "value": "751",
+      "label": "RPCD(Review Petition in Commercial Division matters)-751"
+    },
+    {
+      "value": "712",
+      "label": "RPE(Recrimination Petition)-712"
+    },
+    {
+      "value": "908",
+      "label": "RPIA(REVIEW PETITION IN IA)-908"
+    },
+    {
+      "value": "704",
+      "label": "RPIN(Review Petition for Leave(INPT))-704"
+    },
+    {
+      "value": "732",
+      "label": "RPP(REVIEW PETITION(PIL))-732"
+    },
+    {
+      "value": "718",
+      "label": "RPPS(Review Petition in Parsi Suit)-718"
+    },
+    {
+      "value": "568",
+      "label": "RPW(REVIEW PETITION (WRIT PETITION).)-568"
+    },
+    {
+      "value": "578",
+      "label": "RTP(REVIEW PETITION (TESTAMENTARY))-578"
+    },
+    {
+      "value": "504",
+      "label": "S(SUITS)-504"
+    },
+    {
+      "value": "612",
+      "label": "SAPP(SEBI APPEAL)-612"
+    },
+    {
+      "value": "588",
+      "label": "SCN(SHOW CAUSE NOTICE)-588"
+    },
+    {
+      "value": "619",
+      "label": "SCNCP(SHOW CAUSE NOTICE (COMPANY))-619"
+    },
+    {
+      "value": "707",
+      "label": "SCNIN(Show Cause Notice(INPT))-707"
+    },
+    {
+      "value": "698",
+      "label": "SCNP(SHOW CAUSE NOTICE IN CPTP)-698"
+    },
+    {
+      "value": "618",
+      "label": "SCNTP(SHOW CAUSE NOTICE (TESTA.PETN.))-618"
+    },
+    {
+      "value": "598",
+      "label": "SCNW(SHOW CAUSE NOTICE (WRIT PETITION))-598"
+    },
+    {
+      "value": "595",
+      "label": "SJ(SUMMONSES FOR JUDGEMENT)-595"
+    },
+    {
+      "value": "573",
+      "label": "SMC(SUO MOTO CONTEMPT PETITION)-573"
+    },
+    {
+      "value": "593",
+      "label": "SMCN(SUO MOTO CONTEMPT NOTICE)-593"
+    },
+    {
+      "value": "571",
+      "label": "SMCP(SUO MOTO CRIMINAL CONTEMPT PETITION)-571"
+    },
+    {
+      "value": "572",
+      "label": "SMCR(SUO MOTO CIVIL CONTEMPT REFERENCE)-572"
+    },
+    {
+      "value": "594",
+      "label": "SMN(SUO MOTO NOTICE)-594"
+    },
+    {
+      "value": "726",
+      "label": "SMP(SUO MOTO PIL)-726"
+    },
+    {
+      "value": "910",
+      "label": "SMRPW(SOU MOTU REVIEW PETITION IN WRIT PETITION)-910"
+    },
+    {
+      "value": "724",
+      "label": "SMSN(SUO MOTO SHOW CAUSE NOTICE)-724"
+    },
+    {
+      "value": "575",
+      "label": "SMWP(SUO MOTO IN WRIT PETITION)-575"
+    },
+    {
+      "value": "605",
+      "label": "SPAR(SPECIAL CASE IN ARBITRATION PETN/APPL)-605"
+    },
+    {
+      "value": "540",
+      "label": "SPTA(SUPER PROFIT TAX APPLICATIONS)-540"
+    },
+    {
+      "value": "550",
+      "label": "SPTR(SUPER PROFIT TAX REFERENCE)-550"
+    },
+    {
+      "value": "506",
+      "label": "SS(SUMMARY SUITS)-506"
+    },
+    {
+      "value": "531",
+      "label": "STA(SALES TAX APPLICATIONS)-531"
+    },
+    {
+      "value": "663",
+      "label": "STAPP(SUR TAX APPEAL)-663"
+    },
+    {
+      "value": "551",
+      "label": "STR(SALES TAX REFERENCE)-551"
+    },
+    {
+      "value": "673",
+      "label": "STXA(SALES TAX APPEAL)-673"
+    },
+    {
+      "value": "537",
+      "label": "SURTA(SUR TAX APPLICATION)-537"
+    },
+    {
+      "value": "651",
+      "label": "SURTR(SUR TAX REFERENCE)-651"
+    },
+    {
+      "value": "760",
+      "label": "TC(COMPLAINTS IN TESTAMENTARY MATTERS)-760"
+    },
+    {
+      "value": "709",
+      "label": "TD(Transfer Decree)-709"
+    },
+    {
+      "value": "561",
+      "label": "TP(TESTAMENTARY PETITION)-561"
+    },
+    {
+      "value": "733",
+      "label": "TPAC(Third Party Applications for CC)-733"
+    },
+    {
+      "value": "652",
+      "label": "TPN(THIRD PARTY NOTICE)-652"
+    },
+    {
+      "value": "518",
+      "label": "TRP(TRUST PETITION)-518"
+    },
+    {
+      "value": "653",
+      "label": "TRS(TRANSFERRED SUIT FROM OTHER COURTS)-653"
+    },
+    {
+      "value": "654",
+      "label": "TS(TESTAMENTARY SUITS)-654"
+    },
+    {
+      "value": "735",
+      "label": "WILL(Will)-735"
+    },
+    {
+      "value": "560",
+      "label": "WP(WRIT PETITION)-560"
+    },
+    {
+      "value": "655",
+      "label": "WSCCL(WRITTEN STATMENT amp COUNTER-CLAIM)-655"
+    },
+    {
+      "value": "529",
+      "label": "WTA(WEALTH TAX APPLICATION)-529"
+    },
+    {
+      "value": "541",
+      "label": "WTR(WEALTH TAX REFERENCE)-541"
+    },
+    {
+      "value": "603",
+      "label": "WTXA(WEALTH TAX APPEAL)-603"
+    }
+  ],
+  "Bench at Aurangabad": [
+    {
+      "value": "319",
+      "label": "ABA(ANTICIPATORY BAIL APPLICATION)-319"
+    },
+    {
+      "value": "320",
+      "label": "ACB(APPLICATION FOR CANCELLATION OF BAIL)-320"
+    },
+    {
+      "value": "317",
+      "label": "ALP(Appln. for leave to Appeal by Pvt. Party)-317"
+    },
+    {
+      "value": "316",
+      "label": "ALS(Appln. for leave to Appeal by State)-316"
+    },
+    {
+      "value": "6",
+      "label": "AO(Apeal from Order)-6"
+    },
+    {
+      "value": "305",
+      "label": "APEAL(criminal Appeal)-305"
+    },
+    {
+      "value": "302",
+      "label": "APPLN(Criminal Application)-302"
+    },
+    {
+      "value": "44",
+      "label": "ARB(ARBITRATION APPLICATION)-44"
+    },
+    {
+      "value": "62",
+      "label": "ARBA(Arbitration Appeal)-62"
+    },
+    {
+      "value": "318",
+      "label": "BA(BAIL APPLICATION)-318"
+    },
+    {
+      "value": "8",
+      "label": "CA(Civil Application)-8"
+    },
+    {
+      "value": "58",
+      "label": "CAP(Company Appeal)-58"
+    },
+    {
+      "value": "9",
+      "label": "CAPL(Contempt Appeal)-9"
+    },
+    {
+      "value": "72",
+      "label": "CARAP(Commercial Arbitration Application)-72"
+    },
+    {
+      "value": "71",
+      "label": "CARBA(Commercial Arbitration Appeal)-71"
+    },
+    {
+      "value": "65",
+      "label": "CEA(CENTRAL EXCISE APPEAL)-65"
+    },
+    {
+      "value": "56",
+      "label": "CMA(Company Application)-56"
+    },
+    {
+      "value": "53",
+      "label": "CMP(COMPANY PETITION)-53"
+    },
+    {
+      "value": "73",
+      "label": "COMAP(Commercial Appeal)-73"
+    },
+    {
+      "value": "306",
+      "label": "CONF(Criminal Confirmation Case)-306"
+    },
+    {
+      "value": "309",
+      "label": "CONP(Criminal Contempt Petition)-309"
+    },
+    {
+      "value": "7",
+      "label": "CP(Cont. Petition)-7"
+    },
+    {
+      "value": "22",
+      "label": "CRA(CRA)-22"
+    },
+    {
+      "value": "24",
+      "label": "CRF(Civil References)-24"
+    },
+    {
+      "value": "315",
+      "label": "CRPIL(Criminal Public Interest Litigation)-315"
+    },
+    {
+      "value": "321",
+      "label": "CRSMP(Criminal SUO-MOTO PUBLIC INTEREST LITIGATION)-321"
+    },
+    {
+      "value": "64",
+      "label": "CSA(CUSTOMS APPEAL)-64"
+    },
+    {
+      "value": "32",
+      "label": "EP(Election petition)-32"
+    },
+    {
+      "value": "61",
+      "label": "EPAP(Application in EP)-61"
+    },
+    {
+      "value": "2",
+      "label": "FA(First Appeal)-2"
+    },
+    {
+      "value": "11",
+      "label": "FCA(Family Court Appeal)-11"
+    },
+    {
+      "value": "66",
+      "label": "ITA(INCOME TAX APPEAL)-66"
+    },
+    {
+      "value": "3",
+      "label": "LPA(Letter Patent Appeal)-3"
+    },
+    {
+      "value": "10",
+      "label": "MCA(Misc.Civil Application)-10"
+    },
+    {
+      "value": "41",
+      "label": "MP(Marraige Petition)-41"
+    },
+    {
+      "value": "70",
+      "label": "MVXA(MAH. VALUE ADDED TAX APPEAL)-70"
+    },
+    {
+      "value": "59",
+      "label": "PIL(Public Interest Litigation)-59"
+    },
+    {
+      "value": "40",
+      "label": "RA(Review Application (Civil))-40"
+    },
+    {
+      "value": "30",
+      "label": "RC(Rejected Case)-30"
+    },
+    {
+      "value": "47",
+      "label": "REC(RECRIMINATION NO)-47"
+    },
+    {
+      "value": "307",
+      "label": "REF(Criminal Reference)-307"
+    },
+    {
+      "value": "304",
+      "label": "REVN(Criminal Revision Application)-304"
+    },
+    {
+      "value": "314",
+      "label": "REVW(Criminal Review Application)-314"
+    },
+    {
+      "value": "4",
+      "label": "SA(Second Appeal)-4"
+    },
+    {
+      "value": "25",
+      "label": "SCCA(Supreme Court Civil Appeal)-25"
+    },
+    {
+      "value": "310",
+      "label": "SMAP(Criminal Suo-Motu Application)-310"
+    },
+    {
+      "value": "38",
+      "label": "SMC(SUO MOTO (CP))-38"
+    },
+    {
+      "value": "313",
+      "label": "SMCP(Criminal Suo-Motu Contempt Petition)-313"
+    },
+    {
+      "value": "69",
+      "label": "SMPIL(SUO MOTO (PIL))-69"
+    },
+    {
+      "value": "49",
+      "label": "SMR(SUO MOTO REVESION)-49"
+    },
+    {
+      "value": "312",
+      "label": "SMRN(Criminal Suo-Motu Revision Application)-312"
+    },
+    {
+      "value": "36",
+      "label": "SMW(SUO MOTO (WP))-36"
+    },
+    {
+      "value": "311",
+      "label": "SMWP(Criminal Suo-Motu Writ Petition)-311"
+    },
+    {
+      "value": "301",
+      "label": "SN(Stamp Number)-301"
+    },
+    {
+      "value": "308",
+      "label": "SOMO(Criminal Suo-Motu Petition)-308"
+    },
+    {
+      "value": "26",
+      "label": "SPLCA(Special Civil Application)-26"
+    },
+    {
+      "value": "63",
+      "label": "STA(Sales Tax Application)-63"
+    },
+    {
+      "value": "68",
+      "label": "STAPL(SALES TAX APPEAL)-68"
+    },
+    {
+      "value": "50",
+      "label": "TA(Tax Appeal)-50"
+    },
+    {
+      "value": "303",
+      "label": "WP(Criminal Writ Petition)-303"
+    },
+    {
+      "value": "1",
+      "label": "WP(Writ Petition)-1"
+    },
+    {
+      "value": "67",
+      "label": "WTA(Wealth Tax Apeal)-67"
+    },
+    {
+      "value": "60",
+      "label": "XAP(Cross Appeal)-60"
+    },
+    {
+      "value": "31",
+      "label": "X-APL(Cross Appeal)-31"
+    },
+    {
+      "value": "33",
+      "label": "XFER(TRANSFER MATTER)-33"
+    },
+    {
+      "value": "27",
+      "label": "X-OBJ(X-Objection)-27"
+    }
+  ],
+  "Bench at Nagpur": [
+    {
+      "value": "40",
+      "label": "AA(Arbitration  Apeals)-40"
+    },
+    {
+      "value": "332",
+      "label": "ABA(Cr. Anticipatory Bail Applications)-332"
+    },
+    {
+      "value": "356",
+      "label": "ACB(Application For Cancellation Of Bail)-356"
+    },
+    {
+      "value": "355",
+      "label": "ALP(Appln. For Leave to Appeal By Pvt. Party)-355"
+    },
+    {
+      "value": "354",
+      "label": "ALS(Appln. For Leave to Appeal By State)-354"
+    },
+    {
+      "value": "1",
+      "label": "AO(Appeal from Order)-1"
+    },
+    {
+      "value": "301",
+      "label": "APEAL(Criminal Appeal)-301"
+    },
+    {
+      "value": "333",
+      "label": "APL(Cr. Application U/s 482)-333"
+    },
+    {
+      "value": "321",
+      "label": "APPA(Cr. Application in Appeal)-321"
+    },
+    {
+      "value": "327",
+      "label": "APPCO(Application in Cr. Conf.)-327"
+    },
+    {
+      "value": "326",
+      "label": "APPCP(Application in Cr. Cont. Petn.)-326"
+    },
+    {
+      "value": "324",
+      "label": "APPCR(Application in Cr. Reference)-324"
+    },
+    {
+      "value": "330",
+      "label": "APPLB(Criminal Appln. of Bail)-330"
+    },
+    {
+      "value": "302",
+      "label": "APPLN(Criminal Application)-302"
+    },
+    {
+      "value": "323",
+      "label": "APPP(Cr. Application in Application)-323"
+    },
+    {
+      "value": "322",
+      "label": "APPR(Cr. Application in Revision)-322"
+    },
+    {
+      "value": "320",
+      "label": "APPW(Cr.Application in Writ Petition)-320"
+    },
+    {
+      "value": "2",
+      "label": "ARA(Arbitration application)-2"
+    },
+    {
+      "value": "3",
+      "label": "ARP(Arbitration Petition)-3"
+    },
+    {
+      "value": "331",
+      "label": "BA(Cr. Bail Applications)-331"
+    },
+    {
+      "value": "5",
+      "label": "CA(Civil Application)-5"
+    },
+    {
+      "value": "43",
+      "label": "CAA(Civil Application in AO)-43"
+    },
+    {
+      "value": "46",
+      "label": "CAC(Civil Application in CRA)-46"
+    },
+    {
+      "value": "47",
+      "label": "CAE(Civil Application in Civil Reference)-47"
+    },
+    {
+      "value": "42",
+      "label": "CAF(Civil Application in FA)-42"
+    },
+    {
+      "value": "6",
+      "label": "CAL(Company Application)-6"
+    },
+    {
+      "value": "7",
+      "label": "CALCR(Company Applications (Criminal))-7"
+    },
+    {
+      "value": "49",
+      "label": "CAM(Civil Application in AA)-49"
+    },
+    {
+      "value": "48",
+      "label": "CAN(Civil Application in CP)-48"
+    },
+    {
+      "value": "52",
+      "label": "CAO(CA IN OTHERS (MCA/EP/CA/XOB/CMP))-52"
+    },
+    {
+      "value": "8",
+      "label": "CAP(Company Appeal)-8"
+    },
+    {
+      "value": "36",
+      "label": "CAPL(CUSTOM APPEAL)-36"
+    },
+    {
+      "value": "44",
+      "label": "CAS(Civil Application in SA)-44"
+    },
+    {
+      "value": "50",
+      "label": "CAT(Civil Application in Tax Matters)-50"
+    },
+    {
+      "value": "41",
+      "label": "CAW(Civil Application in WP)-41"
+    },
+    {
+      "value": "45",
+      "label": "CAZ(Civil Application in LPA)-45"
+    },
+    {
+      "value": "9",
+      "label": "CEL(CENTRAL EXCISE APEAL)-9"
+    },
+    {
+      "value": "10",
+      "label": "CER(Central Excise Reference)-10"
+    },
+    {
+      "value": "11",
+      "label": "CMP(Company Petition)-11"
+    },
+    {
+      "value": "51",
+      "label": "COMAP(Commercial Appeal)-51"
+    },
+    {
+      "value": "303",
+      "label": "CONF(Criminal Confirmation Case)-303"
+    },
+    {
+      "value": "304",
+      "label": "CONP(Criminal Contempt Petition)-304"
+    },
+    {
+      "value": "12",
+      "label": "CP(Cont. Petition)-12"
+    },
+    {
+      "value": "13",
+      "label": "CPL(Contempt Appeal)-13"
+    },
+    {
+      "value": "14",
+      "label": "CRA(Civil Revision Application)-14"
+    },
+    {
+      "value": "4",
+      "label": "C.REF(Civil References)-4"
+    },
+    {
+      "value": "353",
+      "label": "CRPIL(Cr. Public Interest Litigation)-353"
+    },
+    {
+      "value": "15",
+      "label": "CS(Civil Suits (Transfer Civil Suit))-15"
+    },
+    {
+      "value": "16",
+      "label": "EDR(Estate Duty Reference)-16"
+    },
+    {
+      "value": "17",
+      "label": "EP(Election petition)-17"
+    },
+    {
+      "value": "18",
+      "label": "FA(First Appeal)-18"
+    },
+    {
+      "value": "19",
+      "label": "FCA(Family Court Appeal)-19"
+    },
+    {
+      "value": "20",
+      "label": "GTA(Gift Tax application)-20"
+    },
+    {
+      "value": "21",
+      "label": "GTR(Gift Tax Reference)-21"
+    },
+    {
+      "value": "22",
+      "label": "ITA(Income tax application)-22"
+    },
+    {
+      "value": "23",
+      "label": "ITL(INCOME TAX APPEAL)-23"
+    },
+    {
+      "value": "24",
+      "label": "ITR(Income tax reference)-24"
+    },
+    {
+      "value": "25",
+      "label": "LPA(Letter Patent Appeal)-25"
+    },
+    {
+      "value": "26",
+      "label": "MCA(Misc.Civil Application)-26"
+    },
+    {
+      "value": "27",
+      "label": "OLR(Official Liquidator Report)-27"
+    },
+    {
+      "value": "53",
+      "label": "PIL(Public Interest Litigation)-53"
+    },
+    {
+      "value": "65",
+      "label": "RAP(Review Petn. in ARA)-65"
+    },
+    {
+      "value": "30",
+      "label": "RC(Rejected Case)-30"
+    },
+    {
+      "value": "305",
+      "label": "REF(Criminal Reference)-305"
+    },
+    {
+      "value": "306",
+      "label": "REVN(Criminal Revision Application)-306"
+    },
+    {
+      "value": "57",
+      "label": "RPA(Review Petn. in AO)-57"
+    },
+    {
+      "value": "60",
+      "label": "RPC(Review Petn. in CRA)-60"
+    },
+    {
+      "value": "61",
+      "label": "RPC.(Review Petn. in FCA)-61"
+    },
+    {
+      "value": "56",
+      "label": "RPF(Review Petn. in  FA)-56"
+    },
+    {
+      "value": "59",
+      "label": "RPL(Review petn. in LPA)-59"
+    },
+    {
+      "value": "62",
+      "label": "RPN(Review Petn. in CP)-62"
+    },
+    {
+      "value": "64",
+      "label": "RPR(Review Petn. in ARP)-64"
+    },
+    {
+      "value": "58",
+      "label": "RPS(Review Petn. in SA)-58"
+    },
+    {
+      "value": "63",
+      "label": "RPT(Review Petn. in CAPL)-63"
+    },
+    {
+      "value": "55",
+      "label": "RPW(Review petin.in WP)-55"
+    },
+    {
+      "value": "29",
+      "label": "SA(Second Appeal)-29"
+    },
+    {
+      "value": "70",
+      "label": "SMAP(Suo Motu Application)-70"
+    },
+    {
+      "value": "338",
+      "label": "SMAP(Cr. Suo Motu Application)-338"
+    },
+    {
+      "value": "69",
+      "label": "SMC(Suo Motu Contempt Petition)-69"
+    },
+    {
+      "value": "337",
+      "label": "SMCP(Cr. Suo Motu Contempt Petition)-337"
+    },
+    {
+      "value": "335",
+      "label": "SMP(Suo Motu Cr PIL)-335"
+    },
+    {
+      "value": "67",
+      "label": "SMPIL(Suo Motu PIL)-67"
+    },
+    {
+      "value": "68",
+      "label": "SMWP(Suo Motu Writ Petition)-68"
+    },
+    {
+      "value": "310",
+      "label": "SMWP(SM - W.P.)-310"
+    },
+    {
+      "value": "336",
+      "label": "SMWP(Suo Motu Cr. Writ Petition)-336"
+    },
+    {
+      "value": "311",
+      "label": "SN(Stamp Number (Crim))-311"
+    },
+    {
+      "value": "31",
+      "label": "SPLCA(Special Civil Application)-31"
+    },
+    {
+      "value": "38",
+      "label": "STA(SALES TAX APPLICATION)-38"
+    },
+    {
+      "value": "37",
+      "label": "STR(SALES TAX REFERENCE)-37"
+    },
+    {
+      "value": "39",
+      "label": "STXA(Sales Tax Appeal)-39"
+    },
+    {
+      "value": "313",
+      "label": "WP(Criminal Writ Petition)-313"
+    },
+    {
+      "value": "32",
+      "label": "WP(Writ Petition)-32"
+    },
+    {
+      "value": "33",
+      "label": "WTA(Wealth Tax application)-33"
+    },
+    {
+      "value": "28",
+      "label": "WTL(Wealth Tax Apeal)-28"
+    },
+    {
+      "value": "34",
+      "label": "WTR(Wealth Tax reference)-34"
+    },
+    {
+      "value": "35",
+      "label": "XOB(Cross Objection)-35"
+    }
+  ],
+  "High court of Bombay at Goa": [
+    {
+      "value": "1",
+      "label": "AAR(Appln. for Appointment of Arbitrator)-1"
+    },
+    {
+      "value": "2",
+      "label": "AELEP(Application in Election Petition)-2"
+    },
+    {
+      "value": "3",
+      "label": "AO(Appeal From Order)-3"
+    },
+    {
+      "value": "4",
+      "label": "ARA(Arbitration Application)-4"
+    },
+    {
+      "value": "5",
+      "label": "ARP(Arbitration Petition)-5"
+    },
+    {
+      "value": "43",
+      "label": "AS(Admiralty Suit)-43"
+    },
+    {
+      "value": "6",
+      "label": "AUA(Appeal Under Arbitration Act)-6"
+    },
+    {
+      "value": "46",
+      "label": "AUCPC(Appeal Under City of Panaji Corporation Act 2002)-46"
+    },
+    {
+      "value": "7",
+      "label": "AUE(Appeal Under E.S.I.)-7"
+    },
+    {
+      "value": "322",
+      "label": "AUEC(Appeal Under Employees Compensation)-322"
+    },
+    {
+      "value": "54",
+      "label": "AUFEM(Appeal Under Foreign Exchange Management Act)-54"
+    },
+    {
+      "value": "56",
+      "label": "AUPML(Appeal U/S 42 of Prevention of Money Laundering Act)-56"
+    },
+    {
+      "value": "45",
+      "label": "AUSFC(Appeal Under State Financial Corporation Act)-45"
+    },
+    {
+      "value": "8",
+      "label": "AUW(Appeal Under Workmens Compensation Act)-8"
+    },
+    {
+      "value": "9",
+      "label": "CA(Civil Application)-9"
+    },
+    {
+      "value": "10",
+      "label": "CAPL(Contempt Appeal)-10"
+    },
+    {
+      "value": "11",
+      "label": "CAREV(Civil Application (Review))-11"
+    },
+    {
+      "value": "12",
+      "label": "COA(Company Appeal)-12"
+    },
+    {
+      "value": "13",
+      "label": "COAP(Company Application)-13"
+    },
+    {
+      "value": "40",
+      "label": "COAPM(Company Application (Main))-40"
+    },
+    {
+      "value": "53",
+      "label": "COMAP(Commercial Appeal)-53"
+    },
+    {
+      "value": "55",
+      "label": "COMP(COMPLAINTS (IN COMPANY PETITION))-55"
+    },
+    {
+      "value": "301",
+      "label": "CONF(Confirmation Case)-301"
+    },
+    {
+      "value": "302",
+      "label": "CONP(Criminal Contempt Petition)-302"
+    },
+    {
+      "value": "14",
+      "label": "COP(Company Petition)-14"
+    },
+    {
+      "value": "15",
+      "label": "CP(Contempt Petition)-15"
+    },
+    {
+      "value": "319",
+      "label": "CPCRM(Criminal Contempt Petition (Main))-319"
+    },
+    {
+      "value": "41",
+      "label": "CPM(Contempt Petition (Main))-41"
+    },
+    {
+      "value": "16",
+      "label": "CRA(Civil Revision Application)-16"
+    },
+    {
+      "value": "17",
+      "label": "CREF(Civil References)-17"
+    },
+    {
+      "value": "320",
+      "label": "CREVA(Criminal Review Application)-320"
+    },
+    {
+      "value": "304",
+      "label": "CRIA(Criminal Appeal)-304"
+    },
+    {
+      "value": "305",
+      "label": "CRIR(Criminal Revision Application)-305"
+    },
+    {
+      "value": "306",
+      "label": "CRMA(Criminal Misc. Application)-306"
+    },
+    {
+      "value": "310",
+      "label": "CRMAB(Criminal Application ( Bail ))-310"
+    },
+    {
+      "value": "311",
+      "label": "CRMAM(Criminal Application ( Main ))-311"
+    },
+    {
+      "value": "312",
+      "label": "CRREF(Criminal Reference Application)-312"
+    },
+    {
+      "value": "316",
+      "label": "CRXFA(Criminal transfer application)-316"
+    },
+    {
+      "value": "18",
+      "label": "CS(Civil Suit)-18"
+    },
+    {
+      "value": "36",
+      "label": "CUSA(Custom Appeal)-36"
+    },
+    {
+      "value": "38",
+      "label": "EA(Execution Application)-38"
+    },
+    {
+      "value": "19",
+      "label": "ELEP(Election Petition)-19"
+    },
+    {
+      "value": "37",
+      "label": "EXA(Excise Appeal)-37"
+    },
+    {
+      "value": "20",
+      "label": "EXAP(Excise Application)-20"
+    },
+    {
+      "value": "21",
+      "label": "FA(First Appeal)-21"
+    },
+    {
+      "value": "22",
+      "label": "ITA(Income Tax Appeal)-22"
+    },
+    {
+      "value": "23",
+      "label": "LPA(Letter Patent Appeal)-23"
+    },
+    {
+      "value": "24",
+      "label": "MCA(Misc.Civil Application)-24"
+    },
+    {
+      "value": "42",
+      "label": "MCAM(Misc.Civil Application (Main))-42"
+    },
+    {
+      "value": "318",
+      "label": "PILCW(PIL Criminal Writ Petition)-318"
+    },
+    {
+      "value": "44",
+      "label": "PILSM(Public Interest Litigation (Suo Motu))-44"
+    },
+    {
+      "value": "25",
+      "label": "PILWP(Public Interest Litigation WP)-25"
+    },
+    {
+      "value": "48",
+      "label": "PROP(Probate Petition)-48"
+    },
+    {
+      "value": "26",
+      "label": "RUCA(Reference Application Under Customs Act)-26"
+    },
+    {
+      "value": "27",
+      "label": "RUIT(Reference Under Income Tax Act)-27"
+    },
+    {
+      "value": "51",
+      "label": "RUSTA(REFERENCE UNDER SALES TAX ACT)-51"
+    },
+    {
+      "value": "28",
+      "label": "SA(Second Appeal)-28"
+    },
+    {
+      "value": "315",
+      "label": "SMCMA(SUO MOTU CRIMINAL MISC. APPLICATION)-315"
+    },
+    {
+      "value": "317",
+      "label": "SMCMM(SUO MOTU CRIMINAL MISCELLANEOUS (MAIN))-317"
+    },
+    {
+      "value": "29",
+      "label": "SMCP(Suo Motu Contempt Petition)-29"
+    },
+    {
+      "value": "313",
+      "label": "SMCR(Suo Motu Criminal Revision)-313"
+    },
+    {
+      "value": "309",
+      "label": "SMCRC(Suo Motu Criminal Contempt Petition)-309"
+    },
+    {
+      "value": "314",
+      "label": "SMCWP(SUO MOTU CRIMINAL WRIT PETITION)-314"
+    },
+    {
+      "value": "30",
+      "label": "SMWP(Suo Motu Writ Petition)-30"
+    },
+    {
+      "value": "31",
+      "label": "STA(Stamp Number (Appln.))-31"
+    },
+    {
+      "value": "50",
+      "label": "STM(Stamp Number Main)-50"
+    },
+    {
+      "value": "49",
+      "label": "STXA(Service Tax Appeal)-49"
+    },
+    {
+      "value": "307",
+      "label": "TACR(Criminal Transfer Appeal)-307"
+    },
+    {
+      "value": "323",
+      "label": "TMA(Trade Marks Appeal)-323"
+    },
+    {
+      "value": "321",
+      "label": "TP(Testamentary Petition)-321"
+    },
+    {
+      "value": "52",
+      "label": "TRA(Tax Revision Application)-52"
+    },
+    {
+      "value": "32",
+      "label": "TXA(Tax Appeal)-32"
+    },
+    {
+      "value": "33",
+      "label": "WP(Writ Petition)-33"
+    },
+    {
+      "value": "308",
+      "label": "WPCR(Criminal Writ Petition)-308"
+    },
+    {
+      "value": "47",
+      "label": "WTR(Wealth Tax Reference)-47"
+    },
+    {
+      "value": "39",
+      "label": "XFA(Transfer Application)-39"
+    },
+    {
+      "value": "34",
+      "label": "XFER(Transfer Matter)-34"
+    },
+    {
+      "value": "35",
+      "label": "XOB(Cross Objection)-35"
+    }
+  ],
+  "Special Court (TORTS) Bombay": [
+    {
+      "value": "758",
+      "label": "COMP(FOR COMPLIANCE)-758"
+    },
+    {
+      "value": "693",
+      "label": "SPAP(Spl. Court Arbitration Petition)-693"
+    },
+    {
+      "value": "756",
+      "label": "SPCC(Spl. Court Counter Claim)-756"
+    },
+    {
+      "value": "708",
+      "label": "SPCO(Spl. Court  Chamber Order)-708"
+    },
+    {
+      "value": "689",
+      "label": "SPCP(Spl. Court Contempt Petition)-689"
+    },
+    {
+      "value": "686",
+      "label": "SPCR(Spl. Court Custodian Report)-686"
+    },
+    {
+      "value": "683",
+      "label": "SPCS(Spl. Court Chamber Summons)-683"
+    },
+    {
+      "value": "691",
+      "label": "SPEX(Spl. Court Execution Application)-691"
+    },
+    {
+      "value": "681",
+      "label": "SPGR(Spl. Court Garnishee Notice)-681"
+    },
+    {
+      "value": "757",
+      "label": "SPIA(INTERIM APPLICATION)-757"
+    },
+    {
+      "value": "690",
+      "label": "SPIP(Spl. Court Insolvency Petition)-690"
+    },
+    {
+      "value": "678",
+      "label": "SPMA(Spl. Court Misc. Application)-678"
+    },
+    {
+      "value": "759",
+      "label": "SPMACR(Spl. Court Misc. Application Criminal)-759"
+    },
+    {
+      "value": "679",
+      "label": "SPMP(Spl. Court Misc Petition)-679"
+    },
+    {
+      "value": "682",
+      "label": "SPNM(Spl. Court Notice of Motion)-682"
+    },
+    {
+      "value": "687",
+      "label": "SPPR(Spl. Court Preciepe)-687"
+    },
+    {
+      "value": "688",
+      "label": "SPRA(Spl. Court Remand Application)-688"
+    },
+    {
+      "value": "717",
+      "label": "SPRP(Spl. Court Review Petition)-717"
+    },
+    {
+      "value": "694",
+      "label": "SPRR(Spl. Court Court Receiver Report)-694"
+    },
+    {
+      "value": "680",
+      "label": "SPS(Spl. Court Suits)-680"
+    },
+    {
+      "value": "684",
+      "label": "SPSC(Spl. Court Spl. Case)-684"
+    },
+    {
+      "value": "728",
+      "label": "SPSD(Spl. Court Suo Moto Direction)-728"
+    },
+    {
+      "value": "695",
+      "label": "SPSJ(Spl. Court Summons for Judgment)-695"
+    },
+    {
+      "value": "760",
+      "label": "SPSMP(Suo Motu Petition)-760"
+    },
+    {
+      "value": "685",
+      "label": "SPSN(Spl. Court Show Cause Notice)-685"
+    },
+    {
+      "value": "696",
+      "label": "SPTN(Spl. Court Third Party Notice)-696"
+    },
+    {
+      "value": "692",
+      "label": "SPUR(Spl. Court Audit Report)-692"
+    }
+  ],
+  "Bombay High Court,Bench at Kolhapur": [
+    {
+      "value": "332",
+      "label": "ABA(Cr. Anticipatory Bail Appln.)-332"
+    },
+    {
+      "value": "723",
+      "label": "AEP(Application in Election Petition)-723"
+    },
+    {
+      "value": "335",
+      "label": "ALP(Appln for Leave to Appeal(PVT.))-335"
+    },
+    {
+      "value": "334",
+      "label": "ALS(Appln For Leave to Appeal(STATE))-334"
+    },
+    {
+      "value": "3",
+      "label": "AO(Appeal from Order)-3"
+    },
+    {
+      "value": "310",
+      "label": "APEAL(Cr. Appeal)-310"
+    },
+    {
+      "value": "330",
+      "label": "APL(Criminal Appln. U/s 482)-330"
+    },
+    {
+      "value": "321",
+      "label": "APPA(Cr. Application in Appeal)-321"
+    },
+    {
+      "value": "327",
+      "label": "APPCO(Application in Cr. Conf.)-327"
+    },
+    {
+      "value": "326",
+      "label": "APPCP(Application in Cr. Cont. Petn.)-326"
+    },
+    {
+      "value": "324",
+      "label": "APPCR(Application In Cr. Reference)-324"
+    },
+    {
+      "value": "325",
+      "label": "APPI(Application in Cr. PIL)-325"
+    },
+    {
+      "value": "302",
+      "label": "APPLN(Cr. Application)-302"
+    },
+    {
+      "value": "323",
+      "label": "APPP(Cr. Application in Application)-323"
+    },
+    {
+      "value": "322",
+      "label": "APPR(Cr. Application in Revision)-322"
+    },
+    {
+      "value": "329",
+      "label": "APPSC(Application In Cr. SUO-MOTO CONP)-329"
+    },
+    {
+      "value": "320",
+      "label": "APPW(Cr. Application in Writ Petition)-320"
+    },
+    {
+      "value": "15",
+      "label": "ARA(Arb. Apeal  u/s 37 of  Arb.  Conc. 96)-15"
+    },
+    {
+      "value": "13",
+      "label": "ARP(Arbitration Petition)-13"
+    },
+    {
+      "value": "99",
+      "label": "AULPA(LPA(AURANGABAD))-99"
+    },
+    {
+      "value": "331",
+      "label": "BA(Criminal Bail Appln.)-331"
+    },
+    {
+      "value": "18",
+      "label": "CA(Civil Application)-18"
+    },
+    {
+      "value": "32",
+      "label": "CAA(Civil Application in AO)-32"
+    },
+    {
+      "value": "35",
+      "label": "CAC(Civil Application in CRA)-35"
+    },
+    {
+      "value": "50",
+      "label": "CAE(Civil Application in C.REF)-50"
+    },
+    {
+      "value": "31",
+      "label": "CAF(Civil Application in FA)-31"
+    },
+    {
+      "value": "67",
+      "label": "CAFM(Civil Application In FEMA)-67"
+    },
+    {
+      "value": "49",
+      "label": "CAI(Civil Application in PIL)-49"
+    },
+    {
+      "value": "34",
+      "label": "CAL(Civil Application in LPA)-34"
+    },
+    {
+      "value": "36",
+      "label": "CAM(Civil Application in FCA)-36"
+    },
+    {
+      "value": "37",
+      "label": "CAN(Civil Application in CP)-37"
+    },
+    {
+      "value": "41",
+      "label": "CAO(CA in Oth.(MCA/TXA/CA/FERA))-41"
+    },
+    {
+      "value": "39",
+      "label": "CAP(Civil Appl. in ARP)-39"
+    },
+    {
+      "value": "12",
+      "label": "CAPL(Contempt Appeal)-12"
+    },
+    {
+      "value": "40",
+      "label": "CAR(Civil Appln. in ARA)-40"
+    },
+    {
+      "value": "33",
+      "label": "CAS(Civil Application in SA)-33"
+    },
+    {
+      "value": "38",
+      "label": "CAT(Civil Application in CAPL)-38"
+    },
+    {
+      "value": "30",
+      "label": "CAW(Civil Application in WP)-30"
+    },
+    {
+      "value": "60",
+      "label": "CAY(Civil Application in FERA)-60"
+    },
+    {
+      "value": "344",
+      "label": "CCAPL(COMMERCIAL CONTEMPT APPEAL)-344"
+    },
+    {
+      "value": "318",
+      "label": "CCNO(Supreme Ct. Cr. C. C. NO.)-318"
+    },
+    {
+      "value": "57",
+      "label": "CCNO(Supreme Ct. C. C. NO.)-57"
+    },
+    {
+      "value": "348",
+      "label": "CCPDJ(CIVIL CONTEMPT PETITION BY DISTRICT JUDICIARY)-348"
+    },
+    {
+      "value": "624",
+      "label": "CEXA(CENTRAL EXISE APPEAL)-624"
+    },
+    {
+      "value": "340",
+      "label": "COARA(COMMERCIAL ARBITRATION APPEAL)-340"
+    },
+    {
+      "value": "342",
+      "label": "COARP(COMMERCIAL ARBITRATION PETITION)-342"
+    },
+    {
+      "value": "341",
+      "label": "COMAO(COMMERICAL AO)-341"
+    },
+    {
+      "value": "343",
+      "label": "COMCP(COMMERCIAL CONTEMPT PETITION)-343"
+    },
+    {
+      "value": "339",
+      "label": "COMFA(COMMERCIAL FA)-339"
+    },
+    {
+      "value": "345",
+      "label": "COMRP(REVIEW PETITION IN COMMERCIAL FA/ARA/AO/ARP/CP/CA)-345"
+    },
+    {
+      "value": "301",
+      "label": "CONF(Cr. Confirmation Case)-301"
+    },
+    {
+      "value": "312",
+      "label": "CONP(Cr. Contempt Petition)-312"
+    },
+    {
+      "value": "346",
+      "label": "COXOB(CROSS OBJECTION IN COMMERCIAL FA/ARA/AO/ARP/CP/CA)-346"
+    },
+    {
+      "value": "10",
+      "label": "CP(Cont. Petition)-10"
+    },
+    {
+      "value": "7",
+      "label": "CRA(Civil Revision Application)-7"
+    },
+    {
+      "value": "9",
+      "label": "C.REF(Civil References)-9"
+    },
+    {
+      "value": "319",
+      "label": "CRPIL(Public Interest Litigation)-319"
+    },
+    {
+      "value": "63",
+      "label": "CRR(Court Receiver Report)-63"
+    },
+    {
+      "value": "628",
+      "label": "CUAPP(CUSTOM APPEAL)-628"
+    },
+    {
+      "value": "509",
+      "label": "EP(ELECTION PETITION)-509"
+    },
+    {
+      "value": "2",
+      "label": "FA(First Appeal)-2"
+    },
+    {
+      "value": "98",
+      "label": "FAG(First Appeal (GOA))-98"
+    },
+    {
+      "value": "8",
+      "label": "FCA(Family Court Appeal)-8"
+    },
+    {
+      "value": "66",
+      "label": "FEMA(FEMA APPEAL)-66"
+    },
+    {
+      "value": "58",
+      "label": "FERA(FERA Appeal)-58"
+    },
+    {
+      "value": "349",
+      "label": "F.NO.(F.NO.)-349"
+    },
+    {
+      "value": "316",
+      "label": "IA(Supreme Ct. Cr. Introlocatory Applicaton)-316"
+    },
+    {
+      "value": "69",
+      "label": "IA(INTERIM APPLICATION)-69"
+    },
+    {
+      "value": "337",
+      "label": "IA(CRI-INTERIM APPLICATION)-337"
+    },
+    {
+      "value": "55",
+      "label": "IA(Supreme Ct. Intolocatory Application)-55"
+    },
+    {
+      "value": "617",
+      "label": "IRXA(INTEREST TAX APPEAL)-617"
+    },
+    {
+      "value": "601",
+      "label": "ITXA(INCOME TAX APPEAL(IT))-601"
+    },
+    {
+      "value": "5",
+      "label": "LPA(Letter Patent Appeal)-5"
+    },
+    {
+      "value": "11",
+      "label": "MCA(Misc.Civil Application)-11"
+    },
+    {
+      "value": "62",
+      "label": "MPA(Marraige Petition(A))-62"
+    },
+    {
+      "value": "722",
+      "label": "MVXA(Mah.Value Added Tax Appeal)-722"
+    },
+    {
+      "value": "6",
+      "label": "PIL(Public Interest Litigation)-6"
+    },
+    {
+      "value": "29",
+      "label": "RAP(Review Petition in ARA)-29"
+    },
+    {
+      "value": "43",
+      "label": "RC(Rejected Case)-43"
+    },
+    {
+      "value": "311",
+      "label": "REF(Cr. Reference)-311"
+    },
+    {
+      "value": "309",
+      "label": "REVN(Cr. Revision Appln.)-309"
+    },
+    {
+      "value": "328",
+      "label": "REVW(Criminal Review)-328"
+    },
+    {
+      "value": "21",
+      "label": "RPA(Review Petn. in AO)-21"
+    },
+    {
+      "value": "24",
+      "label": "RPC(Review Petn. in CRA)-24"
+    },
+    {
+      "value": "20",
+      "label": "RPF(Review Pent. in FA)-20"
+    },
+    {
+      "value": "68",
+      "label": "RPFM(Review Petition In FEMA Appeal)-68"
+    },
+    {
+      "value": "51",
+      "label": "RPI(Review Petition In PIL)-51"
+    },
+    {
+      "value": "70",
+      "label": "RPIA(REVIEW PETITION IN IA)-70"
+    },
+    {
+      "value": "338",
+      "label": "RPIA(REVIEW PETITION IN IA)-338"
+    },
+    {
+      "value": "23",
+      "label": "RPL(Review Petn. in LPA)-23"
+    },
+    {
+      "value": "25",
+      "label": "RPM(Review Petn. in FCA)-25"
+    },
+    {
+      "value": "26",
+      "label": "RPN(Review Petn. in CP)-26"
+    },
+    {
+      "value": "28",
+      "label": "RPR(Review Petn. in ARP)-28"
+    },
+    {
+      "value": "22",
+      "label": "RPS(Review Petn. in SA)-22"
+    },
+    {
+      "value": "27",
+      "label": "RPT(Review Petn. in CAPL)-27"
+    },
+    {
+      "value": "48",
+      "label": "RPV(Review Petition in MCA)-48"
+    },
+    {
+      "value": "19",
+      "label": "RPW(Review Petn. in WP)-19"
+    },
+    {
+      "value": "4",
+      "label": "SA(Second Appeal)-4"
+    },
+    {
+      "value": "53",
+      "label": "SCAP(Supreme Ct. Civil Apeal)-53"
+    },
+    {
+      "value": "314",
+      "label": "SCAP(Supreme Ct. Criminal Apeal)-314"
+    },
+    {
+      "value": "16",
+      "label": "SCCA(CA for Leave to Appeal to Supreme Court)-16"
+    },
+    {
+      "value": "56",
+      "label": "SCCP(Supreme Ct. Contempt Petition)-56"
+    },
+    {
+      "value": "317",
+      "label": "SCCP(Supreme Ct. Cr. Contempt Petition)-317"
+    },
+    {
+      "value": "54",
+      "label": "SCMP(Supreme Ct. Misc. Petition)-54"
+    },
+    {
+      "value": "315",
+      "label": "SCMP(Supreme Ct. Cr. Misc. Petition)-315"
+    },
+    {
+      "value": "333",
+      "label": "SCTP(Supreme Ct. Transfer Petition(CR))-333"
+    },
+    {
+      "value": "61",
+      "label": "SCTP(Supreme Ct. Transfer Petition)-61"
+    },
+    {
+      "value": "313",
+      "label": "SLP(Supreme Ct. Cr. Special Leave Petition)-313"
+    },
+    {
+      "value": "52",
+      "label": "SLP(Supreme Ct. Special Leave Petition)-52"
+    },
+    {
+      "value": "304",
+      "label": "SMAP(Cr. Suo-Motu Application)-304"
+    },
+    {
+      "value": "307",
+      "label": "SMCP(Cr. Suo-Motu Contempt Petn.)-307"
+    },
+    {
+      "value": "347",
+      "label": "SMCPC(Civil Suo Motu Contempt Petition)-347"
+    },
+    {
+      "value": "336",
+      "label": "SMP(Suo-Motu Cr. PIL)-336"
+    },
+    {
+      "value": "59",
+      "label": "SMP(Suo-Moto Petition)-59"
+    },
+    {
+      "value": "65",
+      "label": "SMPIL(Suo Motuo PIL)-65"
+    },
+    {
+      "value": "306",
+      "label": "SMRN(Cr. Suo-Motu Revision Appln.)-306"
+    },
+    {
+      "value": "64",
+      "label": "SMWP(Suo Motu Writ Petition)-64"
+    },
+    {
+      "value": "305",
+      "label": "SMWP(Cr. Suo-Motu Writ Petition)-305"
+    },
+    {
+      "value": "303",
+      "label": "SOMO(Cr. Suo-Motu Petition)-303"
+    },
+    {
+      "value": "17",
+      "label": "SPLCA(Special Civil Application)-17"
+    },
+    {
+      "value": "551",
+      "label": "STR(SALES TAX REFERENCE)-551"
+    },
+    {
+      "value": "673",
+      "label": "STXA(SALES TAX APPEAL)-673"
+    },
+    {
+      "value": "724",
+      "label": "TPAC(Third Party Application for CC)-724"
+    },
+    {
+      "value": "14",
+      "label": "TXA(Tax Appeal)-14"
+    },
+    {
+      "value": "1",
+      "label": "WP(Writ Petition)-1"
+    },
+    {
+      "value": "308",
+      "label": "WP(Cr. Writ Petition)-308"
+    },
+    {
+      "value": "45",
+      "label": "WPA(WRIT PETITION - AURANGABAD)-45"
+    },
+    {
+      "value": "46",
+      "label": "WPG(WRIT PETITION - GOA)-46"
+    },
+    {
+      "value": "47",
+      "label": "WPN(WRIT PETITION - NAGPUR)-47"
+    },
+    {
+      "value": "44",
+      "label": "XFER(TRANSFER MATTER)-44"
+    },
+    {
+      "value": "42",
+      "label": "XOB(Cross Objection Stamp)-42"
+    }
+  ]
+}
