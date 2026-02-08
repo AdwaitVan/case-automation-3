@@ -434,13 +434,22 @@ st.title("High Court Automation")
 st.markdown(
     """
 <style>
-.st-key-top_add_row button, .st-key-bottom_add_row button {
+.st-key-top_add_row div[data-testid="stButton"] > button,
+.st-key-bottom_add_row div[data-testid="stButton"] > button,
+.st-key-top_add_row button,
+.st-key-bottom_add_row button {
     background-color: #2e7d32 !important;
     color: white !important;
     border-color: #2e7d32 !important;
 }
-.st-key-top_remove_last button, .st-key-bottom_remove_last button,
-.st-key-top_reset_rows button, .st-key-bottom_reset_rows button {
+.st-key-top_remove_last div[data-testid="stButton"] > button,
+.st-key-bottom_remove_last div[data-testid="stButton"] > button,
+.st-key-top_reset_rows div[data-testid="stButton"] > button,
+.st-key-bottom_reset_rows div[data-testid="stButton"] > button,
+.st-key-top_remove_last button,
+.st-key-bottom_remove_last button,
+.st-key-top_reset_rows button,
+.st-key-bottom_reset_rows button {
     background-color: #ffdede !important;
     color: #7a1111 !important;
     border-color: #ffbcbc !important;
@@ -490,17 +499,24 @@ with main_col:
     if "case_rows" not in st.session_state:
         st.session_state["case_rows"] = [make_row(**r) for r in sample_rows]
 
+    def add_row_once():
+        st.session_state["case_rows"].append(make_row())
+
+    def remove_last_once():
+        if st.session_state["case_rows"]:
+            st.session_state["case_rows"].pop()
+
+    def reset_to_first_sample_once():
+        first = sample_rows[0]
+        st.session_state["case_rows"] = [make_row(**first)]
+
     action_col1, action_col2, action_col3 = st.columns(3)
     with action_col1:
-        if st.button("Add Row", key="top_add_row"):
-            st.session_state["case_rows"].append(make_row())
+        st.button("Add Row", key="top_add_row", on_click=add_row_once)
     with action_col2:
-        if st.button("Remove Last Row", key="top_remove_last") and st.session_state["case_rows"]:
-            st.session_state["case_rows"].pop()
+        st.button("Remove Last Row", key="top_remove_last", on_click=remove_last_once)
     with action_col3:
-        if st.button("Reset To First Sample", key="top_reset_rows"):
-            first = sample_rows[0]
-            st.session_state["case_rows"] = [make_row(**first)]
+        st.button("Reset To First Sample", key="top_reset_rows", on_click=reset_to_first_sample_once)
 
     st.markdown("**Case Table**")
     head1, head2, head3, head4, head5 = st.columns([5, 6, 2, 2, 1])
@@ -591,18 +607,11 @@ with main_col:
 
     bottom_col1, bottom_col2, bottom_col3 = st.columns(3)
     with bottom_col1:
-        if st.button("Add Row", key="bottom_add_row"):
-            st.session_state["case_rows"].append(make_row())
-            st.rerun()
+        st.button("Add Row", key="bottom_add_row", on_click=add_row_once)
     with bottom_col2:
-        if st.button("Remove Last Row", key="bottom_remove_last") and st.session_state["case_rows"]:
-            st.session_state["case_rows"].pop()
-            st.rerun()
+        st.button("Remove Last Row", key="bottom_remove_last", on_click=remove_last_once)
     with bottom_col3:
-        if st.button("Reset To First Sample", key="bottom_reset_rows"):
-            first = sample_rows[0]
-            st.session_state["case_rows"] = [make_row(**first)]
-            st.rerun()
+        st.button("Reset To First Sample", key="bottom_reset_rows", on_click=reset_to_first_sample_once)
 
     parsed_cases = []
     parse_errors = []
