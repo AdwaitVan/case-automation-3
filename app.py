@@ -1,6 +1,5 @@
 ## Connection Check: VS Code is synced!
 import base64
-import html
 import io
 import json
 import os
@@ -83,29 +82,8 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
-    rendered = html.escape("\n".join(logs))
-    components.html(
-        f"""
-<div id="termbox" style="
-  height:260px;
-  overflow-y:auto;
-  border:1px solid #d9d9d9;
-  border-radius:8px;
-  padding:10px;
-  background:#0f111a;
-  color:#f5f7ff;
-  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size:12px;
-  line-height:1.35;
-  white-space:pre-wrap;
-">{rendered}</div>
-<script>
-  const el = document.getElementById('termbox');
-  if (el) {{ el.scrollTop = el.scrollHeight; }}
-</script>
-""",
-        height=280,
-    )
+    # Keep terminal visually stable and always show latest lines (tail behavior).
+    placeholder.code("\n".join(logs[-200:]), language="bash")
 
 
 def ensure_dir(path: Path):
@@ -497,6 +475,7 @@ with main_col:
     selected_hc_code = HIGH_COURTS[high_court_name]
     bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
     bench_options = list(bench_map.keys()) if bench_map else []
+    default_row_bench = "Appellate Side,Bombay" if "Appellate Side,Bombay" in bench_options else ""
     bench_display_map = {"Bombay High Court,Bench at Kolhapur": "Bench of Kolhapur"}
     bench_display_options = [bench_display_map.get(b, b) for b in bench_options]
     display_to_bench = {bench_display_map.get(b, b): b for b in bench_options}
@@ -526,7 +505,7 @@ with main_col:
         st.session_state["case_rows"] = [make_row(**r) for r in sample_rows]
 
     def add_row_once():
-        st.session_state["case_rows"].append(make_row())
+        st.session_state["case_rows"].append(make_row(bench=default_row_bench))
 
     def remove_last_once():
         if st.session_state["case_rows"]:
@@ -579,6 +558,8 @@ with main_col:
                 index=bench_idx,
                 key=f"row_bench_{row_id}",
                 label_visibility="collapsed",
+                on_change=set_focus_target,
+                args=(f"case_type_{idx}",),
             )
             if bench_name_display == "Choose Option":
                 bench_name = ""
