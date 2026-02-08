@@ -26,6 +26,44 @@ CASE_TYPE_TO_VALUE = {
     "writ petition": "1",
     "second appeal": "4",
 }
+HIGH_COURTS = {
+    "Allahabad High Court": "13",
+    "Bombay High Court": "1",
+    "Calcutta High Court": "16",
+    "Gauhati High Court": "6",
+    "High Court  for State of Telangana": "29",
+    "High Court of Andhra Pradesh": "2",
+    "High Court of Chhattisgarh": "17",
+    "High Court of Delhi": "26",
+    "High Court of Gujarat": "18",
+    "High Court of Himachal Pradesh": "5",
+    "High Court of Jammu and Kashmir": "12",
+    "High Court of Jharkhand": "7",
+    "High Court of Karnataka": "3",
+    "High Court of Kerala": "4",
+    "High Court of Madhya Pradesh": "23",
+    "High Court of Manipur": "25",
+    "High Court of Meghalaya": "21",
+    "High Court of Orissa": "11",
+    "High Court of Punjab and Haryana": "22",
+    "High Court of Rajasthan": "9",
+    "High Court of Sikkim": "24",
+    "High Court of Tripura": "20",
+    "High Court of Uttarakhand": "15",
+    "Madras High Court": "10",
+    "Patna High Court": "8",
+}
+BENCHES_BY_HIGH_COURT = {
+    "1": {
+        "Appellate Side,Bombay": "1",
+        "Bench at Aurangabad": "3",
+        "Bench at Nagpur": "4",
+        "Bombay High Court,Bench at Kolhapur": "7",
+        "High court of Bombay at Goa": "5",
+        "Original Side,Bombay": "2",
+        "Special Court (TORTS) Bombay": "6",
+    }
+}
 
 
 def update_terminal(message, placeholder, logs):
@@ -179,7 +217,14 @@ def get_latest_order_link(html_content):
     return orders[0][0].strftime("%d-%m-%Y"), orders[0][1]
 
 
-def run_bot(cases, terminal_placeholder, debug_mode=False, debug_dir=Path("debug_artifacts")):
+def run_bot(
+    cases,
+    terminal_placeholder,
+    sess_state_code="1",
+    court_complex_code="1",
+    debug_mode=False,
+    debug_dir=Path("debug_artifacts"),
+):
     logs = []
     results = []
 
@@ -227,9 +272,9 @@ def run_bot(cases, terminal_placeholder, debug_mode=False, debug_dir=Path("debug
                     except Exception:
                         page.evaluate("document.querySelector('#leftPaneMenuCS').click()")
 
-                    page.select_option("#sess_state_code", value="1")
+                    page.select_option("#sess_state_code", value=sess_state_code)
                     time.sleep(1)
-                    page.select_option("#court_complex_code", value="1")
+                    page.select_option("#court_complex_code", value=court_complex_code)
                     time.sleep(1)
 
                     try:
@@ -358,6 +403,30 @@ main_col, bg_col = st.columns([2, 1], gap="large")
 
 with main_col:
     st.subheader("Main")
+    hc_col, bench_col = st.columns(2)
+    with hc_col:
+        high_court_name = st.selectbox(
+            "High Court",
+            options=list(HIGH_COURTS.keys()),
+            index=list(HIGH_COURTS.keys()).index("Bombay High Court"),
+        )
+    selected_hc_code = HIGH_COURTS[high_court_name]
+
+    bench_map = BENCHES_BY_HIGH_COURT.get(selected_hc_code, {})
+    with bench_col:
+        if bench_map:
+            bench_name = st.selectbox(
+                "Bench",
+                options=list(bench_map.keys()),
+                index=list(bench_map.keys()).index("Appellate Side,Bombay")
+                if "Appellate Side,Bombay" in bench_map
+                else 0,
+            )
+            selected_bench_code = bench_map[bench_name]
+        else:
+            selected_bench_code = st.text_input("Bench Code", value="1").strip() or "1"
+            st.caption("Bench list is not configured for this High Court yet. Enter bench code manually.")
+
     st.caption("Enter case details in the table below. Columns: `case_type`, `no`, `year`.")
     st.caption(f"Supported case types: {', '.join(sorted(CASE_TYPE_TO_VALUE.keys()))}")
     default_cases_table = [
@@ -425,7 +494,14 @@ with bg_col:
         st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
 
 if fetch_orders:
-    results = run_bot(parsed_cases, terminal, debug_mode=debug_mode, debug_dir=debug_dir)
+    results = run_bot(
+        parsed_cases,
+        terminal,
+        sess_state_code=selected_hc_code,
+        court_complex_code=selected_bench_code,
+        debug_mode=debug_mode,
+        debug_dir=debug_dir,
+    )
     st.session_state["last_results"] = results
 
     if debug_mode:
