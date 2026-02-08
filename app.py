@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import ddddocr
+import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 from PIL import Image, ImageEnhance
@@ -21,6 +22,10 @@ if not hasattr(Image, "ANTIALIAS") and hasattr(Image, "Resampling"):
 
 URL = "https://hcservices.ecourts.gov.in/hcservices/main.php"
 MAX_RETRIES = 5
+CASE_TYPE_TO_VALUE = {
+    "writ petition": "1",
+    "second appeal": "4",
+}
 
 
 def update_terminal(message, placeholder, logs):
@@ -349,77 +354,120 @@ def run_bot(cases, terminal_placeholder, debug_mode=False, debug_dir=Path("debug
 st.set_page_config(page_title="High Court Bot", layout="wide")
 st.title("High Court Automation")
 
-default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
-default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
-debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
-debug_dir = Path(st.text_input("Diagnostics folder", value=default_debug_dir).strip() or "debug_artifacts")
+main_col, bg_col = st.columns([2, 1], gap="large")
 
-if debug_dir.exists():
-    debug_files = sorted([p for p in debug_dir.iterdir() if p.is_file()], key=lambda p: p.stat().st_mtime, reverse=True)
-    st.caption(f"Debug path: `{debug_dir.as_posix()}` | Files: {len(debug_files)}")
-    if debug_files:
-        zip_bytes = build_debug_zip_bytes(debug_dir)
-        if zip_bytes:
-            st.download_button(
-                "Download all debug files (.zip)",
-                data=zip_bytes,
-                file_name=f"debug_artifacts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
-                mime="application/zip",
+with main_col:
+    st.subheader("Main")
+    st.caption("Enter case details in the table below. Columns: `case_type`, `no`, `year`.")
+    st.caption(f"Supported case types: {', '.join(sorted(CASE_TYPE_TO_VALUE.keys()))}")
+    default_cases_table = [
+        {"case_type": "Second Appeal", "no": "508", "year": "1999"},
+        {"case_type": "Writ Petition", "no": "11311", "year": "2025"},
+    ]
+    cases_df = st.data_editor(
+        pd.DataFrame(default_cases_table),
+        hide_index=True,
+        num_rows="dynamic",
+        use_container_width=True,
+    )
+
+    parsed_cases = []
+    parse_errors = []
+    for idx, row in cases_df.iterrows():
+        case_type = "" if pd.isna(row.get("case_type")) else str(row.get("case_type")).strip()
+        no = "" if pd.isna(row.get("no")) else str(row.get("no")).strip()
+        year = "" if pd.isna(row.get("year")) else str(row.get("year")).strip()
+
+        if not case_type and not no and not year:
+            continue
+        if not (case_type and no and year):
+            parse_errors.append(f"Row {idx + 1}: fill all columns (case_type, no, year)")
+            continue
+        value = CASE_TYPE_TO_VALUE.get(case_type.lower())
+        if not value:
+            parse_errors.append(
+                f"Row {idx + 1}: unsupported case_type '{case_type}'. Use one of: {', '.join(sorted(CASE_TYPE_TO_VALUE.keys()))}"
             )
-        with st.expander("Latest debug files", expanded=False):
-            for p in debug_files[:20]:
-                st.write(p.name)
-else:
-    st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
+            continue
+        parsed_cases.append({"name": case_type, "value": value, "no": no, "year": year})
 
-CASES = [
-    {"name": "Second Appeal", "value": "4", "no": "508", "year": "1999"},
-    {"name": "Writ Petition", "value": "1", "no": "11311", "year": "2025"},
-]
+    if parse_errors:
+        for err in parse_errors:
+            st.error(err)
+    else:
+        st.caption(f"Cases ready: {len(parsed_cases)}")
+    fetch_orders = st.button("Fetch Orders", disabled=not parsed_cases or bool(parse_errors))
 
-if st.button("Fetch Orders"):
+with bg_col:
+    st.subheader("Background")
+    default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
+    default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
+    debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
+    debug_dir = Path(st.text_input("Diagnostics folder", value=default_debug_dir).strip() or "debug_artifacts")
     terminal = st.empty()
-    results = run_bot(CASES, terminal, debug_mode=debug_mode, debug_dir=debug_dir)
+
+    if debug_dir.exists():
+        debug_files = sorted([p for p in debug_dir.iterdir() if p.is_file()], key=lambda p: p.stat().st_mtime, reverse=True)
+        st.caption(f"Debug path: `{debug_dir.as_posix()}` | Files: {len(debug_files)}")
+        if debug_files:
+            zip_bytes = build_debug_zip_bytes(debug_dir)
+            if zip_bytes:
+                st.download_button(
+                    "Download all debug files (.zip)",
+                    data=zip_bytes,
+                    file_name=f"debug_artifacts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
+                    mime="application/zip",
+                )
+            with st.expander("Latest debug files", expanded=False):
+                for p in debug_files[:20]:
+                    st.write(p.name)
+    else:
+        st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
+
+if fetch_orders:
+    results = run_bot(parsed_cases, terminal, debug_mode=debug_mode, debug_dir=debug_dir)
     st.session_state["last_results"] = results
 
     if debug_mode:
-        st.info(f"Diagnostics saved under: `{debug_dir.as_posix()}`")
-        raw_img = latest_file(debug_dir, "*_captcha_raw_*.png")
-        processed_img = latest_file(debug_dir, "*_captcha_processed_*.png")
-        if raw_img or processed_img:
-            st.markdown("### Latest Captcha Diagnostics")
-            col1, col2 = st.columns(2)
-            with col1:
-                if raw_img:
-                    st.image(str(raw_img), caption=f"Raw captcha: {raw_img.name}", use_column_width=True)
-                else:
-                    st.write("No raw captcha image found yet.")
-            with col2:
-                if processed_img:
-                    st.image(
-                        str(processed_img),
-                        caption=f"Processed captcha: {processed_img.name}",
-                        use_column_width=True,
-                    )
-                else:
-                    st.write("No processed captcha image found yet.")
+        with bg_col:
+            st.info(f"Diagnostics saved under: `{debug_dir.as_posix()}`")
+            raw_img = latest_file(debug_dir, "*_captcha_raw_*.png")
+            processed_img = latest_file(debug_dir, "*_captcha_processed_*.png")
+            if raw_img or processed_img:
+                st.markdown("### Latest Captcha Diagnostics")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if raw_img:
+                        st.image(str(raw_img), caption=f"Raw captcha: {raw_img.name}", use_column_width=True)
+                    else:
+                        st.write("No raw captcha image found yet.")
+                with col2:
+                    if processed_img:
+                        st.image(
+                            str(processed_img),
+                            caption=f"Processed captcha: {processed_img.name}",
+                            use_column_width=True,
+                        )
+                    else:
+                        st.write("No processed captcha image found yet.")
 
-results_to_show = st.session_state.get("last_results", [])
-if results_to_show:
-    st.markdown("---")
-    st.success(f"Fetched {len(results_to_show)} orders")
-    for res in results_to_show:
-        with st.expander(res["desc"], expanded=True):
-            st.download_button(
-                label="Download PDF",
-                data=res["data"],
-                file_name=f"{res['label'].replace('/', '_')}.pdf",
-                mime="application/pdf",
-            )
-            b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
-            pdf_display = (
-                f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="500"></iframe>'
-            )
-            st.markdown(pdf_display, unsafe_allow_html=True)
-elif "last_results" in st.session_state:
-    st.warning("Run finished, but no orders were fetched in this attempt. Check terminal/debug artifacts above.")
+with main_col:
+    results_to_show = st.session_state.get("last_results", [])
+    if results_to_show:
+        st.markdown("---")
+        st.success(f"Fetched {len(results_to_show)} orders")
+        for res in results_to_show:
+            with st.expander(res["desc"], expanded=True):
+                st.download_button(
+                    label="Download PDF",
+                    data=res["data"],
+                    file_name=f"{res['label'].replace('/', '_')}.pdf",
+                    mime="application/pdf",
+                )
+                b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
+                pdf_display = (
+                    f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="500"></iframe>'
+                )
+                st.markdown(pdf_display, unsafe_allow_html=True)
+    elif "last_results" in st.session_state:
+        st.warning("Run finished, but no orders were fetched in this attempt. Check terminal/debug artifacts in Background.")
