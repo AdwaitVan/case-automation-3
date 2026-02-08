@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 
 import ddddocr
 import streamlit as st
+import streamlit.components.v1 as components
 from bs4 import BeautifulSoup
 from PIL import Image, ImageEnhance
 from playwright.sync_api import sync_playwright
@@ -83,23 +84,27 @@ def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
     rendered = html.escape("\n".join(logs))
-    placeholder.markdown(
+    components.html(
         f"""
-<div style="
-    height: 260px;
-    overflow-y: auto;
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-    padding: 10px;
-    background: #0f111a;
-    color: #f5f7ff;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 12px;
-    line-height: 1.35;
-    white-space: pre-wrap;
+<div id="termbox" style="
+  height:260px;
+  overflow-y:auto;
+  border:1px solid #d9d9d9;
+  border-radius:8px;
+  padding:10px;
+  background:#0f111a;
+  color:#f5f7ff;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:12px;
+  line-height:1.35;
+  white-space:pre-wrap;
 ">{rendered}</div>
+<script>
+  const el = document.getElementById('termbox');
+  if (el) {{ el.scrollTop = el.scrollHeight; }}
+</script>
 """,
-        unsafe_allow_html=True,
+        height=280,
     )
 
 
@@ -258,6 +263,7 @@ def run_bot(
 ):
     logs = []
     results = []
+    case_outcomes = []
 
     if debug_mode:
         ensure_dir(debug_dir)
@@ -280,8 +286,11 @@ def run_bot(
         for case in cases:
             case_label = f"{case['name']} {case['no']}/{case['year']}"
             case_slug = f"{case['name']}_{case['no']}_{case['year']}"
+            row_no = case.get("source_row")
             update_terminal(f"[case] {case_label}", terminal_placeholder, logs)
             success = False
+            fetched = False
+            outcome_reason = "Unknown"
 
             for attempt in range(1, MAX_RETRIES + 1):
                 try:
@@ -377,6 +386,7 @@ def run_bot(
                         page.wait_for_selector(".order_table", state="visible", timeout=20000)
                     except Exception:
                         update_terminal("[info] no history/orders found", terminal_placeholder, logs)
+                        outcome_reason = "No history/orders found"
                         success = True
                         break
 
@@ -392,16 +402,21 @@ def run_bot(
                                     "label": f"{case['no']}/{case['year']}",
                                     "desc": f"{case['name']} (Order: {date_str})",
                                     "data": response.body(),
+                                    "source_row": row_no,
                                 }
                             )
                             update_terminal("[ok] pdf downloaded", terminal_placeholder, logs)
+                            fetched = True
+                            outcome_reason = "PDF downloaded"
                             success = True
                             break
                         update_terminal("[warn] order listed but file missing/broken", terminal_placeholder, logs)
+                        outcome_reason = "Order listed but PDF missing/broken"
                         success = True
                         break
 
                     update_terminal("[info] no recent orders found", terminal_placeholder, logs)
+                    outcome_reason = "No recent orders found"
                     success = True
                     break
                 except Exception as err:
@@ -422,11 +437,20 @@ def run_bot(
 
             if not success:
                 update_terminal("[error] failed after retries", terminal_placeholder, logs)
+                outcome_reason = "Failed after retries"
+            case_outcomes.append(
+                {
+                    "source_row": row_no,
+                    "case_label": case_label,
+                    "fetched": fetched,
+                    "reason": outcome_reason,
+                }
+            )
             time.sleep(1)
 
         browser.close()
         update_terminal("[done] finished", terminal_placeholder, logs)
-        return results, logs
+        return results, logs, case_outcomes
 
 
 st.set_page_config(page_title="High Court Bot", layout="wide")
@@ -463,6 +487,8 @@ main_col, bg_col = st.columns([2, 1], gap="large")
 
 with main_col:
     st.subheader("Main")
+    avg_case_seconds = float(st.session_state.get("avg_case_seconds", 35.0))
+    st.caption(f"Estimated time per case: ~{int(avg_case_seconds)} sec")
     high_court_name = st.selectbox(
         "High Court",
         options=list(HIGH_COURTS.keys()),
@@ -510,6 +536,9 @@ with main_col:
         first = sample_rows[0]
         st.session_state["case_rows"] = [make_row(**first)]
 
+    def set_focus_target(target_label):
+        st.session_state["focus_input_label"] = target_label
+
     action_col1, action_col2, action_col3 = st.columns(3)
     with action_col1:
         st.button("Add Row", key="top_add_row", on_click=add_row_once)
@@ -519,18 +548,21 @@ with main_col:
         st.button("Reset To First Sample", key="top_reset_rows", on_click=reset_to_first_sample_once)
 
     st.markdown("**Case Table**")
-    head1, head2, head3, head4, head5 = st.columns([5, 6, 2, 2, 1])
+    head1, head2, head3, head4, head5, head6 = st.columns([5, 6, 2, 2, 1, 1])
     head1.markdown("`bench`")
     head2.markdown("`case_type`")
     head3.markdown("`no`")
     head4.markdown("`year`")
     head5.markdown("`x`")
+    head6.markdown("`↻`")
 
     row_inputs = []
     row_id_to_delete = None
+    retry_row_id = None
+    has_previous_fetch = "last_outcomes" in st.session_state
     for idx, row in enumerate(st.session_state["case_rows"], start=1):
         row_id = row.get("id")
-        c1, c2, c3, c4, c5 = st.columns([5, 6, 2, 2, 1])
+        c1, c2, c3, c4, c5, c6 = st.columns([5, 6, 2, 2, 1, 1])
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
@@ -578,6 +610,8 @@ with main_col:
             index=ct_idx,
             key=f"row_case_type_{row_id}",
             label_visibility="collapsed",
+            on_change=set_focus_target,
+            args=(f"no_{idx}",),
         )
         if case_type == "Choose Option":
             case_type = ""
@@ -596,6 +630,8 @@ with main_col:
         ).strip()
         if c5.button("x", key=f"row_remove_{row_id}", help="Remove this row"):
             row_id_to_delete = row_id
+        if c6.button("↻", key=f"row_retry_{row_id}", help="Retry this row", disabled=not has_previous_fetch):
+            retry_row_id = row_id
 
         row_inputs.append({"id": row_id, "bench": bench_name, "case_type": case_type, "no": no, "year": year})
 
@@ -604,6 +640,22 @@ with main_col:
         st.rerun()
 
     st.session_state["case_rows"] = row_inputs
+
+    focus_label = st.session_state.pop("focus_input_label", "")
+    if focus_label:
+        components.html(
+            f"""
+<script>
+  const target = window.parent.document.querySelector('input[aria-label="{focus_label}"]');
+  if (target) {{
+    target.focus();
+    target.select();
+    target.scrollIntoView({{behavior: "smooth", block: "center"}});
+  }}
+</script>
+""",
+            height=0,
+        )
 
     bottom_col1, bottom_col2, bottom_col3 = st.columns(3)
     with bottom_col1:
@@ -638,6 +690,10 @@ with main_col:
         case_bench_code = bench_map[bench_name] if bench_map else bench_name
         parsed_cases.append(
             {
+                "row_id": row.get("id"),
+                "source_row": idx,
+                "bench": bench_name,
+                "case_type": case_type,
                 "name": case_type,
                 "value": value,
                 "no": no,
@@ -652,7 +708,10 @@ with main_col:
             st.error(err)
     else:
         st.caption(f"Cases ready: {len(parsed_cases)}")
+        est_total = len(parsed_cases) * avg_case_seconds
+        st.caption(f"Estimated total fetch time: ~{int(est_total // 60)}m {int(est_total % 60)}s")
     fetch_orders = st.button("Fetch Orders", disabled=not parsed_cases or bool(parse_errors))
+    parsed_case_by_row_id = {c.get("row_id"): c for c in parsed_cases}
 
 with bg_col:
     st.subheader("History")
@@ -686,6 +745,7 @@ with bg_col:
         st.caption("No run history yet.")
 
     st.subheader("Background")
+    st.caption("ignore")
     default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
     default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
     debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
@@ -723,27 +783,41 @@ with bg_col:
     else:
         st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
 
-if fetch_orders:
+run_single_retry = retry_row_id is not None and retry_row_id in parsed_case_by_row_id
+if fetch_orders or run_single_retry:
     run_now = datetime.now()
     run_id = run_now.strftime("R-%y%m%d-%H%M%S")
-    results, run_logs = run_bot(
-        parsed_cases,
+    run_cases = parsed_cases if fetch_orders else [parsed_case_by_row_id[retry_row_id]]
+    t0 = time.time()
+    results, run_logs, case_outcomes = run_bot(
+        run_cases,
         terminal,
         default_sess_state_code=selected_hc_code,
         default_court_complex_code="1",
         debug_mode=debug_mode,
         debug_dir=debug_dir,
     )
-    st.session_state["last_results"] = results
+    elapsed = max(time.time() - t0, 1.0)
+    per_case = elapsed / max(len(run_cases), 1)
+    old_avg = float(st.session_state.get("avg_case_seconds", 35.0))
+    st.session_state["avg_case_seconds"] = (old_avg * 0.7) + (per_case * 0.3)
+
+    existing_results = st.session_state.get("last_results", [])
+    if run_single_retry:
+        keep = [r for r in existing_results if r.get("source_row") != retry_row_id]
+        st.session_state["last_results"] = keep + results
+    else:
+        st.session_state["last_results"] = results
     st.session_state["last_run_logs"] = run_logs
+    st.session_state["last_outcomes"] = case_outcomes
     st.session_state["run_history"].insert(
         0,
         {
             "run_id": run_id,
             "timestamp": run_now.strftime("%Y-%m-%d %H:%M:%S"),
-            "total_rows": len(parsed_cases),
-            "fetched_rows": len(results),
-            "failed_rows": max(len(parsed_cases) - len(results), 0),
+            "total_rows": len(run_cases),
+            "fetched_rows": len([o for o in case_outcomes if o.get("fetched")]),
+            "failed_rows": len([o for o in case_outcomes if not o.get("fetched")]),
             "cases": [
                 {
                     "bench": c["bench"],
@@ -787,7 +861,13 @@ if fetch_orders:
                         st.write("No processed captcha image found yet.")
 
 with main_col:
+    st.markdown('<div id="results_anchor"></div>', unsafe_allow_html=True)
     results_to_show = st.session_state.get("last_results", [])
+    last_outcomes = st.session_state.get("last_outcomes", [])
+    not_fetched_rows = [str(o.get("source_row")) for o in last_outcomes if not o.get("fetched") and o.get("source_row")]
+    if not_fetched_rows:
+        st.warning(f"Rows not fetched: {', '.join(not_fetched_rows)}")
+
     if results_to_show:
         st.markdown("---")
         st.success(f"Fetched {len(results_to_show)} orders")
@@ -806,3 +886,14 @@ with main_col:
                 st.markdown(pdf_display, unsafe_allow_html=True)
     elif "last_results" in st.session_state:
         st.warning("Run finished, but no orders were fetched in this attempt. Check terminal/debug artifacts in Background.")
+
+if fetch_orders or run_single_retry:
+    components.html(
+        """
+<script>
+  const anchor = window.parent.document.getElementById('results_anchor');
+  if (anchor) { anchor.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+</script>
+""",
+        height=0,
+    )
