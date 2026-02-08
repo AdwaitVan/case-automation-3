@@ -1,5 +1,6 @@
 ## Connection Check: VS Code is synced!
 import base64
+import html
 import io
 import json
 import os
@@ -81,7 +82,25 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
-    placeholder.code("\n".join(logs), language="bash")
+    rendered = html.escape("\n".join(logs))
+    placeholder.markdown(
+        f"""
+<div style="
+    height: 260px;
+    overflow-y: auto;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    padding: 10px;
+    background: #0f111a;
+    color: #f5f7ff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+">{rendered}</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def ensure_dir(path: Path):
@@ -407,7 +426,7 @@ def run_bot(
 
         browser.close()
         update_terminal("[done] finished", terminal_placeholder, logs)
-        return results
+        return results, logs
 
 
 st.set_page_config(page_title="High Court Bot", layout="wide")
@@ -435,52 +454,69 @@ with main_col:
     if not bench_map:
         st.warning("Bench list for this High Court is not configured yet.")
 
+    sample_rows = [
+        {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
+        {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
+    ]
+
+    if "next_row_id" not in st.session_state:
+        st.session_state["next_row_id"] = 1
+
+    def make_row(bench="", case_type="", no="", year=""):
+        row_id = st.session_state["next_row_id"]
+        st.session_state["next_row_id"] += 1
+        return {"id": row_id, "bench": bench, "case_type": case_type, "no": no, "year": year}
+
     if "case_rows" not in st.session_state:
-        st.session_state["case_rows"] = [
-            {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
-            {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
-        ]
+        st.session_state["case_rows"] = [make_row(**r) for r in sample_rows]
 
     action_col1, action_col2, action_col3 = st.columns(3)
     with action_col1:
-        if st.button("Add Row"):
-            st.session_state["case_rows"].append({"bench": "", "case_type": "", "no": "", "year": ""})
+        if st.button("Add Row", key="top_add_row"):
+            st.session_state["case_rows"].append(make_row())
+            st.rerun()
     with action_col2:
-        if st.button("Remove Last Row") and st.session_state["case_rows"]:
+        if st.button("Remove Last Row", key="top_remove_last") and st.session_state["case_rows"]:
             st.session_state["case_rows"].pop()
+            st.rerun()
     with action_col3:
-        if st.button("Reset Sample Rows"):
-            st.session_state["case_rows"] = [
-                {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
-                {"bench": "Bombay High Court,Bench at Kolhapur", "case_type": "WP(Writ Petition)-1", "no": "11311", "year": "2025"},
-            ]
+        if st.button("Reset To First Sample", key="top_reset_rows"):
+            first = sample_rows[0]
+            st.session_state["case_rows"] = [make_row(**first)]
+            st.rerun()
 
     st.markdown("**Case Table**")
-    head1, head2, head3, head4 = st.columns([3, 4, 2, 2])
+    head1, head2, head3, head4, head5 = st.columns([5, 6, 2, 2, 1])
     head1.markdown("`bench`")
     head2.markdown("`case_type`")
     head3.markdown("`no`")
     head4.markdown("`year`")
+    head5.markdown("`x`")
 
     row_inputs = []
+    row_id_to_delete = None
     for idx, row in enumerate(st.session_state["case_rows"], start=1):
-        c1, c2, c3, c4 = st.columns([3, 4, 2, 2])
+        row_id = row.get("id")
+        c1, c2, c3, c4, c5 = st.columns([5, 6, 2, 2, 1])
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
-            bench_idx = bench_options.index(default_bench) if default_bench in bench_options else 0
+            bench_choice_options = ["Choose Option"] + bench_options
+            bench_idx = bench_choice_options.index(default_bench) if default_bench in bench_choice_options else 0
             bench_name = c1.selectbox(
                 f"bench_{idx}",
-                options=bench_options,
+                options=bench_choice_options,
                 index=bench_idx,
-                key=f"row_bench_{idx}",
+                key=f"row_bench_{row_id}",
                 label_visibility="collapsed",
             )
+            if bench_name == "Choose Option":
+                bench_name = ""
         else:
             bench_name = c1.text_input(
                 f"bench_{idx}",
                 value=default_bench,
-                key=f"row_bench_{idx}",
+                key=f"row_bench_{row_id}",
                 label_visibility="collapsed",
             ).strip()
 
@@ -492,35 +528,57 @@ with main_col:
             bench_case_labels = [item.get("label", "").strip() for item in CASE_TYPES_BY_BENCH.get(bench_name, []) if item.get("label")]
 
         default_case_type = str(row.get("case_type", "") or "")
-        if default_case_type and default_case_type not in bench_case_labels:
-            bench_case_labels = [default_case_type] + bench_case_labels
-        if not bench_case_labels:
-            bench_case_labels = [""]
-        ct_idx = bench_case_labels.index(default_case_type) if default_case_type in bench_case_labels else 0
+        case_type_options = ["Choose Option"] + bench_case_labels if bench_case_labels else ["Choose Option"]
+        if default_case_type and default_case_type not in case_type_options:
+            case_type_options = ["Choose Option", default_case_type] + bench_case_labels
+        ct_idx = case_type_options.index(default_case_type) if default_case_type in case_type_options else 0
         case_type = c2.selectbox(
             f"case_type_{idx}",
-            options=bench_case_labels,
+            options=case_type_options,
             index=ct_idx,
-            key=f"row_case_type_{idx}",
+            key=f"row_case_type_{row_id}",
             label_visibility="collapsed",
         )
+        if case_type == "Choose Option":
+            case_type = ""
 
         no = c3.text_input(
             f"no_{idx}",
             value=str(row.get("no", "") or ""),
-            key=f"row_no_{idx}",
+            key=f"row_no_{row_id}",
             label_visibility="collapsed",
         ).strip()
         year = c4.text_input(
             f"year_{idx}",
             value=str(row.get("year", "") or ""),
-            key=f"row_year_{idx}",
+            key=f"row_year_{row_id}",
             label_visibility="collapsed",
         ).strip()
+        if c5.button("x", key=f"row_remove_{row_id}", help="Remove this row"):
+            row_id_to_delete = row_id
 
-        row_inputs.append({"bench": bench_name, "case_type": case_type, "no": no, "year": year})
+        row_inputs.append({"id": row_id, "bench": bench_name, "case_type": case_type, "no": no, "year": year})
+
+    if row_id_to_delete is not None:
+        st.session_state["case_rows"] = [r for r in row_inputs if r.get("id") != row_id_to_delete]
+        st.rerun()
 
     st.session_state["case_rows"] = row_inputs
+
+    bottom_col1, bottom_col2, bottom_col3 = st.columns(3)
+    with bottom_col1:
+        if st.button("Add Row", key="bottom_add_row"):
+            st.session_state["case_rows"].append(make_row())
+            st.rerun()
+    with bottom_col2:
+        if st.button("Remove Last Row", key="bottom_remove_last") and st.session_state["case_rows"]:
+            st.session_state["case_rows"].pop()
+            st.rerun()
+    with bottom_col3:
+        if st.button("Reset To First Sample", key="bottom_reset_rows"):
+            first = sample_rows[0]
+            st.session_state["case_rows"] = [make_row(**first)]
+            st.rerun()
 
     parsed_cases = []
     parse_errors = []
@@ -564,12 +622,56 @@ with main_col:
     fetch_orders = st.button("Fetch Orders", disabled=not parsed_cases or bool(parse_errors))
 
 with bg_col:
+    st.subheader("History")
+    if "run_history" not in st.session_state:
+        st.session_state["run_history"] = []
+    history_items = st.session_state.get("run_history", [])
+    if history_items:
+        for hidx, entry in enumerate(history_items[:10], start=1):
+            header = (
+                f"{entry.get('run_id', 'R-NA')} | {entry['timestamp']} | "
+                f"Fetched: {entry.get('fetched_rows', 0)} | Failed: {entry.get('failed_rows', 0)}"
+            )
+            with st.expander(header, expanded=False):
+                for cidx, case in enumerate(entry["cases"], start=1):
+                    hc1, hc2 = st.columns([10, 1])
+                    with hc1:
+                        st.caption(
+                            f"{case['bench']} | {case['case_type']} | {case['no']}/{case['year']}"
+                        )
+                    with hc2:
+                        if st.button("+", key=f"hist_add_{hidx}_{cidx}", help="Add this case back to rows"):
+                            st.session_state["case_rows"].append(
+                                make_row(
+                                    bench=case["bench"],
+                                    case_type=case["case_type"],
+                                    no=case["no"],
+                                    year=case["year"],
+                                )
+                            )
+                            st.rerun()
+    else:
+        st.caption("No run history yet.")
+
     st.subheader("Background")
     default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
     default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
     debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
     debug_dir = Path(st.text_input("Diagnostics folder", value=default_debug_dir).strip() or "debug_artifacts")
+    st.caption("Live terminal logs")
     terminal = st.empty()
+
+    last_run_logs = st.session_state.get("last_run_logs", [])
+    if last_run_logs:
+        log_text = "\n".join(last_run_logs)
+        st.download_button(
+            "Download last run terminal logs (.txt)",
+            data=log_text.encode("utf-8"),
+            file_name=f"run_terminal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            mime="text/plain",
+        )
+        with st.expander("Last run terminal logs", expanded=False):
+            st.code(log_text, language="bash")
 
     if debug_dir.exists():
         debug_files = sorted([p for p in debug_dir.iterdir() if p.is_file()], key=lambda p: p.stat().st_mtime, reverse=True)
@@ -590,7 +692,9 @@ with bg_col:
         st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
 
 if fetch_orders:
-    results = run_bot(
+    run_now = datetime.now()
+    run_id = run_now.strftime("R-%y%m%d-%H%M%S")
+    results, run_logs = run_bot(
         parsed_cases,
         terminal,
         default_sess_state_code=selected_hc_code,
@@ -599,6 +703,33 @@ if fetch_orders:
         debug_dir=debug_dir,
     )
     st.session_state["last_results"] = results
+    st.session_state["last_run_logs"] = run_logs
+    st.session_state["run_history"].insert(
+        0,
+        {
+            "run_id": run_id,
+            "timestamp": run_now.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_rows": len(parsed_cases),
+            "fetched_rows": len(results),
+            "failed_rows": max(len(parsed_cases) - len(results), 0),
+            "cases": [
+                {
+                    "bench": c["bench"],
+                    "case_type": c["case_type"],
+                    "no": c["no"],
+                    "year": c["year"],
+                }
+                for c in row_inputs
+                if c["bench"] and c["case_type"] and c["no"] and c["year"]
+            ],
+        },
+    )
+    st.session_state["run_history"] = st.session_state["run_history"][:20]
+
+    if debug_mode:
+        ensure_dir(debug_dir)
+        log_path = debug_dir / f"terminal_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        log_path.write_text("\n".join(run_logs), encoding="utf-8")
 
     if debug_mode:
         with bg_col:
