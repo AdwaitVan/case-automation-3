@@ -9,7 +9,8 @@ pinned: false
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
 
-
+# Note
+the app will stop working properly if few are changes to hcserviecs ecourt website or lawyerservice website. need to update again,
 
 # High Court Automation (Streamlit + Playwright)
 
