@@ -607,8 +607,14 @@ with main_col:
             ).strip()
 
         mode = str(row.get("mode", "CN") or "CN")
-        if c2.button("ST" if mode == "ST" else "CN", key=f"mode_toggle_{row_id}", help="Toggle CN/ST mode"):
-            mode = "CN" if mode == "ST" else "ST"
+        st_mode_checked = c2.checkbox(
+            "ST",
+            value=(mode == "ST"),
+            key=f"row_st_{row_id}",
+            help="Checked: Filing Number mode (ST). Unchecked: Case Number mode (CN).",
+            label_visibility="collapsed",
+        )
+        mode = "ST" if st_mode_checked else "CN"
 
         bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
         bench_case_labels = [item.get("label", "").strip() for item in bench_case_types if item.get("label")]
