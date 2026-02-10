@@ -620,7 +620,7 @@ with main_col:
         mode = str(row.get("mode", "CN") or "CN")
         if mode == "ST":
             st_key = f"row_st_btn_on_{row_id}"
-            st_label = "ST"
+            st_label = "ST ON"
         else:
             st_key = f"row_st_btn_off_{row_id}"
             st_label = "ST"
