@@ -83,31 +83,14 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
-    rendered = html.escape("\n".join(logs[-300:]))
-    placeholder.empty()
-    with placeholder.container():
-        components.html(
-            f"""
-<div id="live_terminal" style="
-  height:260px;
-  overflow-y:auto;
-  border:1px solid #dfe3e8;
-  border-radius:8px;
-  background:#f5f7fb;
-  color:#1f2937;
-  padding:10px 12px;
-  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size:14px;
-  line-height:1.4;
-  white-space:pre-wrap;
-">{rendered}</div>
-<script>
-  const box = document.getElementById("live_terminal");
-  if (box) {{ box.scrollTop = box.scrollHeight; }}
-</script>
-""",
-            height=280,
-        )
+    # Keep terminal as a single contained box and always show latest lines.
+    placeholder.text_area(
+        "Live terminal logs",
+        value="\n".join(logs[-250:]),
+        height=260,
+        disabled=True,
+        label_visibility="collapsed",
+    )
 
 
 def ensure_dir(path: Path):
@@ -266,6 +249,12 @@ def get_latest_order_link(html_content):
     return orders[0][0].strftime("%d-%m-%Y"), orders[0][1]
 
 
+def extract_cnr_number(html_content):
+    # Example: HCBM01-023517-1995
+    match = re.search(r"\b[A-Z]{2,6}\d{2}-\d{6}-\d{4}\b", html_content or "")
+    return match.group(0) if match else ""
+
+
 def run_bot(
     cases,
     terminal_placeholder,
@@ -304,6 +293,7 @@ def run_bot(
             case_label = f"{case['name']} {case['no']}/{case['year']}"
             case_slug = f"{case['name']}_{case['no']}_{case['year']}"
             row_no = case.get("source_row")
+            search_mode = case.get("search_mode", "CN")
             update_terminal(f"[case] {case_label}", terminal_placeholder, logs)
             success = False
             fetched = False
@@ -337,15 +327,23 @@ def run_bot(
                     page.select_option("#court_complex_code", value=case_court_complex_code)
                     time.sleep(1)
 
-                    try:
-                        if page.locator("#CScaseNumber").is_visible():
-                            page.locator("#CScaseNumber").click(force=True)
-                    except Exception:
-                        page.evaluate("document.querySelector('#CScaseNumber').click()")
-
-                    page.select_option("#case_type", value=case["value"])
-                    page.locator("#search_case_no").fill(case["no"])
-                    page.locator("#rgyear").fill(case["year"])
+                    if search_mode == "ST":
+                        try:
+                            if page.locator("#CSfilingNumber").is_visible():
+                                page.locator("#CSfilingNumber").click(force=True)
+                        except Exception:
+                            page.evaluate("document.querySelector('#CSfilingNumber').click()")
+                        page.locator("#filing_no").fill(case["no"])
+                        page.locator("#filyear").fill(case["year"])
+                    else:
+                        try:
+                            if page.locator("#CScaseNumber").is_visible():
+                                page.locator("#CScaseNumber").click(force=True)
+                        except Exception:
+                            page.evaluate("document.querySelector('#CScaseNumber').click()")
+                        page.select_option("#case_type", value=case["value"])
+                        page.locator("#search_case_no").fill(case["no"])
+                        page.locator("#rgyear").fill(case["year"])
 
                     write_debug_bytes(
                         debug_mode,
@@ -398,6 +396,10 @@ def run_bot(
                     except Exception:
                         pass
 
+                    cnr_no = extract_cnr_number(page.content())
+                    if cnr_no:
+                        update_terminal(f"[info] CNR: {cnr_no}", terminal_placeholder, logs)
+
                     try:
                         page.wait_for_selector("#dispTable a[onclick*='viewHistory']", timeout=10000)
                         page.locator("#dispTable a[onclick*='viewHistory']").first.click(force=True)
@@ -421,6 +423,7 @@ def run_bot(
                                     "desc": f"{case['name']} (Order: {date_str})",
                                     "data": response.body(),
                                     "source_row": row_no,
+                                    "cnr": cnr_no,
                                 }
                             )
                             update_terminal("[ok] pdf downloaded", terminal_placeholder, logs)
@@ -486,11 +489,9 @@ st.markdown(
     border-color: #2e7d32 !important;
 }
 .st-key-top_remove_last div[data-testid="stButton"] > button,
-.st-key-bottom_remove_last div[data-testid="stButton"] > button,
 .st-key-top_reset_rows div[data-testid="stButton"] > button,
 .st-key-bottom_reset_rows div[data-testid="stButton"] > button,
 .st-key-top_remove_last button,
-.st-key-bottom_remove_last button,
 .st-key-top_reset_rows button,
 .st-key-bottom_reset_rows button {
     background-color: #ffdede !important;
@@ -528,26 +529,22 @@ with main_col:
         st.warning("Bench list for this High Court is not configured yet.")
 
     sample_rows = [
-        {"bench": "Appellate Side,Bombay", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
+        {"bench": "Appellate Side,Bombay", "mode": "CN", "case_type": "SA(Second Appeal)-4", "no": "508", "year": "1999"},
     ]
 
     if "next_row_id" not in st.session_state:
         st.session_state["next_row_id"] = 1
 
-    def make_row(bench="", case_type="", no="", year=""):
+    def make_row(bench="", mode="CN", case_type="", no="", year=""):
         row_id = st.session_state["next_row_id"]
         st.session_state["next_row_id"] += 1
-        return {"id": row_id, "bench": bench, "case_type": case_type, "no": no, "year": year}
+        return {"id": row_id, "bench": bench, "mode": mode, "case_type": case_type, "no": no, "year": year}
 
     if "case_rows" not in st.session_state:
         st.session_state["case_rows"] = [make_row(**r) for r in sample_rows]
 
     def add_row_once():
         st.session_state["case_rows"].append(make_row(bench=default_row_bench))
-
-    def remove_last_once():
-        if st.session_state["case_rows"]:
-            st.session_state["case_rows"].pop()
 
     def reset_to_first_sample_once():
         first = sample_rows[0]
@@ -556,22 +553,21 @@ with main_col:
     def set_focus_target(target_label):
         st.session_state["focus_input_label"] = target_label
 
-    action_col1, action_col2, action_col3 = st.columns(3)
+    action_col1, action_col2 = st.columns(2)
     with action_col1:
         st.button("Add Row", key="top_add_row", on_click=add_row_once)
     with action_col2:
-        st.button("Remove Last Row", key="top_remove_last", on_click=remove_last_once)
-    with action_col3:
         st.button("Reset To First Sample", key="top_reset_rows", on_click=reset_to_first_sample_once)
 
     st.markdown("**Case Table**")
-    head1, head2, head3, head4, head5, head6 = st.columns([5, 6, 2, 2, 1, 1])
+    head1, head2, head3, head4, head5, head6, head7 = st.columns([5, 1, 6, 2, 2, 1, 1])
     head1.markdown("`bench`")
-    head2.markdown("`case_type`")
-    head3.markdown("`no`")
-    head4.markdown("`year`")
-    head5.markdown("`x`")
-    head6.markdown("`↻`")
+    head2.markdown("`ST`")
+    head3.markdown("`case_type`")
+    head4.markdown("`no`")
+    head5.markdown("`year`")
+    head6.markdown("`x`")
+    head7.markdown("`↻`")
 
     row_inputs = []
     row_id_to_delete = None
@@ -579,7 +575,7 @@ with main_col:
     has_previous_fetch = "last_outcomes" in st.session_state
     for idx, row in enumerate(st.session_state["case_rows"], start=1):
         row_id = row.get("id")
-        c1, c2, c3, c4, c5, c6 = st.columns([5, 6, 2, 2, 1, 1])
+        c1, c2, c3, c4, c5, c6, c7 = st.columns([5, 1, 6, 2, 2, 1, 1])
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
@@ -610,6 +606,10 @@ with main_col:
                 label_visibility="collapsed",
             ).strip()
 
+        mode = str(row.get("mode", "CN") or "CN")
+        if c2.button("ST" if mode == "ST" else "CN", key=f"mode_toggle_{row_id}", help="Toggle CN/ST mode"):
+            mode = "CN" if mode == "ST" else "ST"
+
         bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
         bench_case_labels = [item.get("label", "").strip() for item in bench_case_types if item.get("label")]
         if quick_filter_text:
@@ -622,7 +622,7 @@ with main_col:
         if default_case_type and default_case_type not in case_type_options:
             case_type_options = ["Choose Option", default_case_type] + bench_case_labels
         ct_idx = case_type_options.index(default_case_type) if default_case_type in case_type_options else 0
-        case_type = c2.selectbox(
+        case_type = c3.selectbox(
             f"case_type_{idx}",
             options=case_type_options,
             index=ct_idx,
@@ -630,28 +630,29 @@ with main_col:
             label_visibility="collapsed",
             on_change=set_focus_target,
             args=(f"no_{idx}",),
+            disabled=(mode == "ST"),
         )
-        if case_type == "Choose Option":
+        if case_type == "Choose Option" or mode == "ST":
             case_type = ""
 
-        no = c3.text_input(
+        no = c4.text_input(
             f"no_{idx}",
             value=str(row.get("no", "") or ""),
             key=f"row_no_{row_id}",
             label_visibility="collapsed",
         ).strip()
-        year = c4.text_input(
+        year = c5.text_input(
             f"year_{idx}",
             value=str(row.get("year", "") or ""),
             key=f"row_year_{row_id}",
             label_visibility="collapsed",
         ).strip()
-        if c5.button("x", key=f"row_remove_{row_id}", help="Remove this row"):
+        if c6.button("x", key=f"row_remove_{row_id}", help="Remove this row"):
             row_id_to_delete = row_id
-        if c6.button("↻", key=f"row_retry_{row_id}", help="Retry this row", disabled=not has_previous_fetch):
+        if c7.button("↻", key=f"row_retry_{row_id}", help="Retry this row", disabled=not has_previous_fetch):
             retry_row_id = row_id
 
-        row_inputs.append({"id": row_id, "bench": bench_name, "case_type": case_type, "no": no, "year": year})
+        row_inputs.append({"id": row_id, "bench": bench_name, "mode": mode, "case_type": case_type, "no": no, "year": year})
 
     if row_id_to_delete is not None:
         st.session_state["case_rows"] = [r for r in row_inputs if r.get("id") != row_id_to_delete]
@@ -675,36 +676,41 @@ with main_col:
             height=0,
         )
 
-    bottom_col1, bottom_col2, bottom_col3 = st.columns(3)
+    bottom_col1, bottom_col2 = st.columns(2)
     with bottom_col1:
         st.button("Add Row", key="bottom_add_row", on_click=add_row_once)
     with bottom_col2:
-        st.button("Remove Last Row", key="bottom_remove_last", on_click=remove_last_once)
-    with bottom_col3:
         st.button("Reset To First Sample", key="bottom_reset_rows", on_click=reset_to_first_sample_once)
 
     parsed_cases = []
     parse_errors = []
     for idx, row in enumerate(row_inputs, start=1):
         bench_name = str(row.get("bench", "") or "").strip()
+        mode = str(row.get("mode", "CN") or "CN")
         case_type = str(row.get("case_type", "") or "").strip()
         no = str(row.get("no", "") or "").strip()
         year = str(row.get("year", "") or "").strip()
 
         if not bench_name and not case_type and not no and not year:
             continue
-        if not (bench_name and case_type and no and year):
+        if mode == "ST":
+            if not (bench_name and no and year):
+                parse_errors.append(f"Row {idx}: fill bench, filing no, year for ST mode")
+                continue
+        elif not (bench_name and case_type and no and year):
             parse_errors.append(f"Row {idx}: fill all columns (bench, case_type, no, year)")
             continue
         if bench_map and bench_name not in bench_map:
             parse_errors.append(f"Row {idx}: invalid bench '{bench_name}' for selected High Court")
             continue
-        bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
-        label_to_value = {item.get("label"): item.get("value") for item in bench_case_types}
-        value = label_to_value.get(case_type)
-        if not value:
-            parse_errors.append(f"Row {idx}: case_type '{case_type}' is not valid for bench '{bench_name}'")
-            continue
+        value = ""
+        if mode != "ST":
+            bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
+            label_to_value = {item.get("label"): item.get("value") for item in bench_case_types}
+            value = label_to_value.get(case_type)
+            if not value:
+                parse_errors.append(f"Row {idx}: case_type '{case_type}' is not valid for bench '{bench_name}'")
+                continue
         case_bench_code = bench_map[bench_name] if bench_map else bench_name
         parsed_cases.append(
             {
@@ -712,7 +718,8 @@ with main_col:
                 "source_row": idx,
                 "bench": bench_name,
                 "case_type": case_type,
-                "name": case_type,
+                "search_mode": mode,
+                "name": case_type if mode != "ST" else "Filing Number",
                 "value": value,
                 "no": no,
                 "year": year,
@@ -746,14 +753,17 @@ with bg_col:
                 for cidx, case in enumerate(entry["cases"], start=1):
                     hc1, hc2 = st.columns([10, 1])
                     with hc1:
+                        mode_txt = case.get("mode", "CN")
+                        mode_label = "ST" if mode_txt == "ST" else "CN"
                         st.caption(
-                            f"{case['bench']} | {case['case_type']} | {case['no']}/{case['year']}"
+                            f"[{mode_label}] {case['bench']} | {case['case_type'] or 'Filing Number'} | {case['no']}/{case['year']}"
                         )
                     with hc2:
                         if st.button("+", key=f"hist_add_{hidx}_{cidx}", help="Add this case back to rows"):
                             st.session_state["case_rows"].append(
                                 make_row(
                                     bench=case["bench"],
+                                    mode=case.get("mode", "CN"),
                                     case_type=case["case_type"],
                                     no=case["no"],
                                     year=case["year"],
@@ -842,6 +852,7 @@ if fetch_orders or run_single_retry:
             "cases": [
                 {
                     "bench": c["bench"],
+                    "mode": c.get("mode", "CN"),
                     "case_type": c["case_type"],
                     "no": c["no"],
                     "year": c["year"],
@@ -894,6 +905,8 @@ with main_col:
         st.success(f"Fetched {len(results_to_show)} orders")
         for res in results_to_show:
             with st.expander(res["desc"], expanded=True):
+                if res.get("cnr"):
+                    st.caption(f"CNR: {res['cnr']}")
                 st.download_button(
                     label="Download PDF",
                     data=res["data"],
