@@ -480,23 +480,34 @@ st.title("High Court Automation")
 st.markdown(
     """
 <style>
-.st-key-top_add_row div[data-testid="stButton"] > button,
-.st-key-bottom_add_row div[data-testid="stButton"] > button,
-.st-key-top_add_row button,
-.st-key-bottom_add_row button {
+[class*="st-key-top_add_row"] div[data-testid="stButton"] > button,
+[class*="st-key-bottom_add_row"] div[data-testid="stButton"] > button,
+[class*="st-key-top_add_row"] button,
+[class*="st-key-bottom_add_row"] button {
     background-color: #2e7d32 !important;
     color: white !important;
     border-color: #2e7d32 !important;
 }
-.st-key-top_remove_last div[data-testid="stButton"] > button,
-.st-key-top_reset_rows div[data-testid="stButton"] > button,
-.st-key-bottom_reset_rows div[data-testid="stButton"] > button,
-.st-key-top_remove_last button,
-.st-key-top_reset_rows button,
-.st-key-bottom_reset_rows button {
+[class*="st-key-top_reset_rows"] div[data-testid="stButton"] > button,
+[class*="st-key-bottom_reset_rows"] div[data-testid="stButton"] > button,
+[class*="st-key-top_reset_rows"] button,
+[class*="st-key-bottom_reset_rows"] button {
     background-color: #ffdede !important;
     color: #7a1111 !important;
     border-color: #ffbcbc !important;
+}
+[class*="st-key-row_st_btn_off_"] button,
+[class*="st-key-row_st_btn_on_"] button {
+    width: 100% !important;
+    min-height: 3rem !important;
+    white-space: nowrap !important;
+    padding: 0.25rem 0.4rem !important;
+    font-weight: 600 !important;
+}
+[class*="st-key-row_st_btn_on_"] button {
+    background-color: #e9f8ec !important;
+    color: #116329 !important;
+    border-color: #55b16b !important;
 }
 </style>
 """,
@@ -560,7 +571,7 @@ with main_col:
         st.button("Reset To First Sample", key="top_reset_rows", on_click=reset_to_first_sample_once)
 
     st.markdown("**Case Table**")
-    head1, head2, head3, head4, head5, head6, head7 = st.columns([5, 1, 6, 2, 2, 1, 1])
+    head1, head2, head3, head4, head5, head6, head7 = st.columns([5, 1.2, 6, 2, 2, 1, 1])
     head1.markdown("`bench`")
     head2.markdown("`ST`")
     head3.markdown("`case_type`")
@@ -575,7 +586,7 @@ with main_col:
     has_previous_fetch = "last_outcomes" in st.session_state
     for idx, row in enumerate(st.session_state["case_rows"], start=1):
         row_id = row.get("id")
-        c1, c2, c3, c4, c5, c6, c7 = st.columns([5, 1, 6, 2, 2, 1, 1])
+        c1, c2, c3, c4, c5, c6, c7 = st.columns([5, 1.2, 6, 2, 2, 1, 1])
 
         default_bench = str(row.get("bench", "") or "")
         if bench_options:
@@ -607,7 +618,14 @@ with main_col:
             ).strip()
 
         mode = str(row.get("mode", "CN") or "CN")
-        if c2.button("ST", key=f"row_st_btn_{row_id}", help="Toggle ST mode for this row"):
+        if mode == "ST":
+            st_key = f"row_st_btn_on_{row_id}"
+            st_label = "ST"
+        else:
+            st_key = f"row_st_btn_off_{row_id}"
+            st_label = "ST"
+
+        if c2.button(st_label, key=st_key, help="Toggle ST mode for this row"):
             mode = "CN" if mode == "ST" else "ST"
 
         bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
