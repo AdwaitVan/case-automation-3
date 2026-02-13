@@ -1,0 +1,23 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+
+# Virtualenv
+.venv/
+venv/
+
+# Streamlit
+.streamlit/
+
+# App artifacts
+debug_artifacts/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs
+*.log

@@ -52,6 +52,6 @@ streamlit run app.py
 
 ## Run in Docker
 ```bash
-docker build -t hc-bot .
-docker run --rm -p 7860:7860 hc-bot
+docker build -t case-automation-app-local .
+docker run --rm -p 8501:8501 case-automation-app-local
 ```

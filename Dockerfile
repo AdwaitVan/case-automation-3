@@ -1,5 +1,5 @@
-# 1. Use Python 3.10 on Debian Bullseye (Stable, widely supported)
-FROM python:3.10-bullseye
+﻿# 1. Keep Python on latest compatible line for ddddocr 1.5.x
+FROM python:3.12-slim-bookworm
 
 # 2. Install system tools manually to avoid dependency issues
 # We include specific libraries that Playwright needs
@@ -35,6 +35,7 @@ ENV DEBUG_DIR=/app/debug_artifacts
 # 4. Install Python libraries
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python -c "import ddddocr; ddddocr.DdddOcr(show_ad=False); print('ddddocr import ok')"
 
 # 5. Install Playwright browser
 RUN playwright install chromium
@@ -44,4 +45,5 @@ RUN playwright install chromium
 COPY . .
 
 # 7. Run Streamlit
-CMD ["streamlit", "run", "app.py", "--server.port=7860", "--server.address=0.0.0.0"]
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

@@ -1,5 +1,5 @@
-streamlit==1.28.0
-playwright==1.39.0
+streamlit
+playwright
 beautifulsoup4
-ddddocr==1.4.8
-Pillow==9.5.0
+ddddocr==1.5.6
+Pillow

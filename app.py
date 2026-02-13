@@ -1,4 +1,4 @@
-## Connection Check: VS Code is synced!
+﻿## Connection Check: VS Code is synced!
 import base64
 import html
 import io
@@ -83,14 +83,41 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
-    # Keep terminal as a single contained box and always show latest lines.
-    placeholder.text_area(
-        "Live terminal logs",
-        value="\n".join(logs[-250:]),
-        height=260,
-        disabled=True,
-        label_visibility="collapsed",
+    rendered_lines = logs[-260:]
+    lines_html = "".join(
+        f'<div class="term-line">{html.escape(line)}</div>' for line in rendered_lines
     )
+    placeholder.empty()
+    with placeholder.container():
+        st.markdown(
+            f"""
+<div data-terminal-box="1" style="
+  height:260px;
+  overflow-y:auto;
+  border:1px solid #dfe3e8;
+  border-radius:8px;
+  background:#f5f7fb;
+  color:#1f2937;
+  padding:10px 12px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:14px;
+  line-height:1.4;
+">
+  {lines_html}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        components.html(
+            """
+<script>
+  const boxes = window.parent.document.querySelectorAll('[data-terminal-box="1"]');
+  const box = boxes.length ? boxes[boxes.length - 1] : null;
+  if (box) { requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; }); }
+</script>
+""",
+            height=0,
+        )
 
 
 def ensure_dir(path: Path):
@@ -250,9 +277,45 @@ def get_latest_order_link(html_content):
 
 
 def extract_cnr_number(html_content):
-    # Example: HCBM01-023517-1995
-    match = re.search(r"\b[A-Z]{2,6}\d{2}-\d{6}-\d{4}\b", html_content or "")
-    return match.group(0) if match else ""
+    text = html_content or ""
+    # Primary: parse the exact case details table row for "CNR Number".
+    try:
+        soup = BeautifulSoup(text, "html.parser")
+        details_table = soup.select_one("table.case_details_table")
+        if details_table:
+            for tr in details_table.select("tr"):
+                row_text = tr.get_text(" ", strip=True)
+                if re.search(r"\bCNR\s*Number\b", row_text, flags=re.IGNORECASE):
+                    strong = tr.find("strong")
+                    candidate = strong.get_text(" ", strip=True) if strong else row_text
+                    cnr_match = re.search(r"\b[A-Z]{2,10}\d{2}-\d{6}-\d{4}\b", candidate)
+                    if cnr_match:
+                        return cnr_match.group(0)
+    except Exception:
+        pass
+    # Fallback: common CNR format anywhere in HTML.
+    match = re.search(r"\b[A-Z]{2,10}\d{2}-\d{6}-\d{4}\b", text)
+    if match:
+        return match.group(0)
+    return ""
+
+
+def digits_only(value: str, max_len: int):
+    cleaned = re.sub(r"\D", "", str(value or ""))
+    return cleaned[:max_len]
+
+
+def build_case_ref(case_type: str, no: str, year: str, search_mode: str):
+    if (search_mode or "").upper() == "ST":
+        return f"FILING/{no}/{year}"
+    raw = str(case_type or "").strip()
+    code = raw
+    if "(" in raw:
+        code = raw.split("(", 1)[0].strip()
+    elif "-" in raw:
+        code = raw.split("-", 1)[0].strip()
+    code = code or "CASE"
+    return f"{code}/{no}/{year}"
 
 
 def run_bot(
@@ -298,6 +361,7 @@ def run_bot(
             success = False
             fetched = False
             outcome_reason = "Unknown"
+            latest_cnr = ""
 
             for attempt in range(1, MAX_RETRIES + 1):
                 try:
@@ -333,6 +397,7 @@ def run_bot(
                                 page.locator("#CSfilingNumber").click(force=True)
                         except Exception:
                             page.evaluate("document.querySelector('#CSfilingNumber').click()")
+                        page.wait_for_selector("#CSFilingNumberDiv", state="visible", timeout=10000)
                         page.locator("#filing_no").fill(case["no"])
                         page.locator("#filyear").fill(case["year"])
                     else:
@@ -396,19 +461,104 @@ def run_bot(
                     except Exception:
                         pass
 
-                    cnr_no = extract_cnr_number(page.content())
+                    # Filing search sometimes takes a few seconds before records are rendered.
+                    cnr_no = ""
+                    disp_rows = 0
+                    disp_links = 0
+                    show_list_visible = False
+                    show_list2_visible = False
+                    for _ in range(12):
+                        html_now = page.content()
+                        cnr_no = extract_cnr_number(html_now)
+                        disp_links = page.locator("#dispTable a").count()
+                        has_history_link = disp_links > 0
+                        has_order_table = page.locator(".order_table").count() > 0
+                        disp_rows = page.locator("#dispTable tbody tr").count()
+                        show_list_visible = page.locator("#showList").count() > 0
+                        show_list2_visible = page.locator("#showList2").count() > 0
+                        if cnr_no or has_history_link or has_order_table or disp_rows > 0 or show_list_visible or show_list2_visible:
+                            break
+                        time.sleep(1)
                     if cnr_no:
+                        latest_cnr = cnr_no
                         update_terminal(f"[info] CNR: {cnr_no}", terminal_placeholder, logs)
+                    elif search_mode == "ST":
+                        update_terminal("[info] CNR not found on result page", terminal_placeholder, logs)
+                    update_terminal(
+                        f"[debug] post-submit showList={show_list_visible} showList2={show_list2_visible} disp_rows={disp_rows} disp_links={disp_links}",
+                        terminal_placeholder,
+                        logs,
+                    )
 
                     try:
-                        page.wait_for_selector("#dispTable a[onclick*='viewHistory']", timeout=10000)
-                        page.locator("#dispTable a[onclick*='viewHistory']").first.click(force=True)
-                        page.wait_for_selector(".order_table", state="visible", timeout=20000)
+                        history_opened = False
+                        order_visible = False
+                        if page.locator("#dispTable a").count() > 0:
+                            page.locator("#dispTable a").first.click(force=True)
+                            history_opened = True
+                        elif page.locator(".order_table").count() > 0:
+                            order_visible = True
+                            history_opened = True
+                        else:
+                            raise Exception("history_link_not_found")
+
+                        for _ in range(20):
+                            html_after_view = page.content()
+                            if not cnr_no:
+                                cnr_after_view = extract_cnr_number(html_after_view)
+                                if cnr_after_view:
+                                    cnr_no = cnr_after_view
+                                    latest_cnr = cnr_no
+                                    update_terminal(f"[info] CNR: {cnr_no}", terminal_placeholder, logs)
+                            if page.locator(".order_table").count() > 0:
+                                order_visible = True
+                                break
+                            if page.locator("table.case_details_table").count() > 0:
+                                history_opened = True
+                            time.sleep(1)
+
+                        if not order_visible and history_opened:
+                            write_debug_bytes(
+                                debug_mode,
+                                debug_dir,
+                                case_slug,
+                                attempt,
+                                "after_view_no_order_table",
+                                "html",
+                                page.content().encode("utf-8", errors="ignore"),
+                                terminal_placeholder,
+                                logs,
+                            )
+                            update_terminal("[info] history opened but order table not found", terminal_placeholder, logs)
+                            outcome_reason = "History opened; order table not found"
+                            success = True
+                            break
+                        elif page.locator(".order_table").count() > 0:
+                            order_visible = True
+                            history_opened = True
                     except Exception:
+                        write_debug_bytes(
+                            debug_mode,
+                            debug_dir,
+                            case_slug,
+                            attempt,
+                            "after_submit_no_history",
+                            "html",
+                            page.content().encode("utf-8", errors="ignore"),
+                            terminal_placeholder,
+                            logs,
+                        )
                         update_terminal("[info] no history/orders found", terminal_placeholder, logs)
                         outcome_reason = "No history/orders found"
                         success = True
                         break
+
+                    if not cnr_no:
+                        cnr_after_view = extract_cnr_number(page.content())
+                        if cnr_after_view:
+                            cnr_no = cnr_after_view
+                            latest_cnr = cnr_no
+                            update_terminal(f"[info] CNR: {cnr_no}", terminal_placeholder, logs)
 
                     date_str, rel_link = get_latest_order_link(page.content())
                     if date_str:
@@ -423,7 +573,13 @@ def run_bot(
                                     "desc": f"{case['name']} (Order: {date_str})",
                                     "data": response.body(),
                                     "source_row": row_no,
-                                    "cnr": cnr_no,
+                                    "cnr": cnr_no or latest_cnr,
+                                    "case_ref": build_case_ref(
+                                        case.get("case_type", ""),
+                                        case.get("no", ""),
+                                        case.get("year", ""),
+                                        case.get("search_mode", "CN"),
+                                    ),
                                 }
                             )
                             update_terminal("[ok] pdf downloaded", terminal_placeholder, logs)
@@ -465,6 +621,7 @@ def run_bot(
                     "case_label": case_label,
                     "fetched": fetched,
                     "reason": outcome_reason,
+                    "cnr": latest_cnr,
                 }
             )
             time.sleep(1)
@@ -496,18 +653,12 @@ st.markdown(
     color: #7a1111 !important;
     border-color: #ffbcbc !important;
 }
-[class*="st-key-row_st_btn_off_"] button,
-[class*="st-key-row_st_btn_on_"] button {
+[class*="st-key-row_st_btn_"] button {
     width: 100% !important;
     min-height: 3rem !important;
     white-space: nowrap !important;
-    padding: 0.25rem 0.4rem !important;
+    padding: 0.25rem 0.7rem !important;
     font-weight: 600 !important;
-}
-[class*="st-key-row_st_btn_on_"] button {
-    background-color: #e9f8ec !important;
-    color: #116329 !important;
-    border-color: #55b16b !important;
 }
 </style>
 """,
@@ -578,7 +729,7 @@ with main_col:
     head4.markdown("`no`")
     head5.markdown("`year`")
     head6.markdown("`x`")
-    head7.markdown("`↻`")
+    head7.markdown("`â†»`")
 
     row_inputs = []
     row_id_to_delete = None
@@ -618,15 +769,18 @@ with main_col:
             ).strip()
 
         mode = str(row.get("mode", "CN") or "CN")
-        if mode == "ST":
-            st_key = f"row_st_btn_on_{row_id}"
-            st_label = "ST ON"
-        else:
-            st_key = f"row_st_btn_off_{row_id}"
-            st_label = "ST"
-
-        if c2.button(st_label, key=st_key, help="Toggle ST mode for this row"):
-            mode = "CN" if mode == "ST" else "ST"
+        if c2.button(
+            "ST",
+            key=f"row_st_btn_{row_id}",
+            help="Toggle ST mode for this row",
+            type="primary" if mode == "ST" else "secondary",
+        ):
+            new_mode = "CN" if mode == "ST" else "ST"
+            row["mode"] = new_mode
+            if new_mode == "ST":
+                row["case_type"] = ""
+                st.session_state[f"row_case_type_{row_id}"] = "Choose Option"
+            st.rerun()
 
         bench_case_types = CASE_TYPES_BY_BENCH.get(bench_name, [])
         bench_case_labels = [item.get("label", "").strip() for item in bench_case_types if item.get("label")]
@@ -657,17 +811,21 @@ with main_col:
             f"no_{idx}",
             value=str(row.get("no", "") or ""),
             key=f"row_no_{row_id}",
+            max_chars=7,
             label_visibility="collapsed",
         ).strip()
+        no = digits_only(no, 7)
         year = c5.text_input(
             f"year_{idx}",
             value=str(row.get("year", "") or ""),
             key=f"row_year_{row_id}",
+            max_chars=4,
             label_visibility="collapsed",
         ).strip()
+        year = digits_only(year, 4)
         if c6.button("x", key=f"row_remove_{row_id}", help="Remove this row"):
             row_id_to_delete = row_id
-        if c7.button("↻", key=f"row_retry_{row_id}", help="Retry this row", disabled=not has_previous_fetch):
+        if c7.button("â†»", key=f"row_retry_{row_id}", help="Retry this row", disabled=not has_previous_fetch):
             retry_row_id = row_id
 
         row_inputs.append({"id": row_id, "bench": bench_name, "mode": mode, "case_type": case_type, "no": no, "year": year})
@@ -715,9 +873,22 @@ with main_col:
             if not (bench_name and no and year):
                 parse_errors.append(f"Row {idx}: fill bench, filing no, year for ST mode")
                 continue
+            if not no.isdigit():
+                parse_errors.append(f"Row {idx}: filing no must be numeric")
+                continue
+            if not (year.isdigit() and len(year) == 4):
+                parse_errors.append(f"Row {idx}: year must be a 4-digit number")
+                continue
         elif not (bench_name and case_type and no and year):
             parse_errors.append(f"Row {idx}: fill all columns (bench, case_type, no, year)")
             continue
+        else:
+            if not no.isdigit():
+                parse_errors.append(f"Row {idx}: case no must be numeric")
+                continue
+            if not (year.isdigit() and len(year) == 4):
+                parse_errors.append(f"Row {idx}: year must be a 4-digit number")
+                continue
         if bench_map and bench_name not in bench_map:
             parse_errors.append(f"Row {idx}: invalid bench '{bench_name}' for selected High Court")
             continue
@@ -803,10 +974,11 @@ with bg_col:
     if last_run_logs:
         log_text = "\n".join(last_run_logs)
         st.download_button(
-            "Download last run terminal logs (.txt)",
+            "Copy whole terminal logs (.txt)",
             data=log_text.encode("utf-8"),
             file_name=f"run_terminal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
             mime="text/plain",
+            key="copy_logs_prev_run",
         )
         with st.expander("Last run terminal logs", expanded=False):
             st.code(log_text, language="bash")
@@ -822,6 +994,7 @@ with bg_col:
                     data=zip_bytes,
                     file_name=f"debug_artifacts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
                     mime="application/zip",
+                    key="download_all_debug_zip",
                 )
             with st.expander("Latest debug files", expanded=False):
                 for p in debug_files[:20]:
@@ -859,6 +1032,14 @@ if fetch_orders or run_single_retry:
         st.session_state["last_results"] = results
     st.session_state["last_run_logs"] = run_logs
     st.session_state["last_outcomes"] = case_outcomes
+    with bg_col:
+        st.download_button(
+            "Copy whole terminal logs (.txt)",
+            data="\n".join(run_logs).encode("utf-8"),
+            file_name=f"run_terminal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            mime="text/plain",
+            key=f"copy_run_logs_now_{run_id}",
+        )
     st.session_state["run_history"].insert(
         0,
         {
@@ -897,7 +1078,7 @@ if fetch_orders or run_single_retry:
                 col1, col2 = st.columns(2)
                 with col1:
                     if raw_img:
-                        st.image(str(raw_img), caption=f"Raw captcha: {raw_img.name}", use_column_width=True)
+                        st.image(str(raw_img), caption=f"Raw captcha: {raw_img.name}", width="stretch")
                     else:
                         st.write("No raw captcha image found yet.")
                 with col2:
@@ -905,7 +1086,7 @@ if fetch_orders or run_single_retry:
                         st.image(
                             str(processed_img),
                             caption=f"Processed captcha: {processed_img.name}",
-                            use_column_width=True,
+                            width="stretch",
                         )
                     else:
                         st.write("No processed captcha image found yet.")
@@ -917,19 +1098,54 @@ with main_col:
     not_fetched_rows = [str(o.get("source_row")) for o in last_outcomes if not o.get("fetched") and o.get("source_row")]
     if not_fetched_rows:
         st.warning(f"Rows not fetched: {', '.join(not_fetched_rows)}")
+    cnr_only_rows = [
+        {
+            "row": o.get("source_row"),
+            "cnr": o.get("cnr"),
+            "case_label": o.get("case_label", ""),
+        }
+        for o in last_outcomes
+        if not o.get("fetched") and o.get("source_row") and o.get("cnr")
+    ]
+    if cnr_only_rows:
+        lines = "".join(
+            f"""
+<div style="padding:8px 0;border-top:1px solid #a8c8ea;">
+  <div><strong>Row {item['row']}</strong>: {html.escape(str(item['case_label']))}</div>
+  <div><code>{html.escape(str(item['cnr']))}</code></div>
+</div>
+"""
+            for item in cnr_only_rows
+        )
+        st.markdown(
+            f"""
+<div style="background:#dce8f7;border:1px solid #c3d7f0;border-radius:10px;padding:12px 16px;color:#0b4f9f;">
+  <div style="font-weight:700;margin-bottom:4px;">CNR found (no PDF fetched)</div>
+  {lines}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
     if results_to_show:
         st.markdown("---")
         st.success(f"Fetched {len(results_to_show)} orders")
-        for res in results_to_show:
+        for idx, res in enumerate(results_to_show, start=1):
             with st.expander(res["desc"], expanded=True):
+                if res.get("case_ref"):
+                    st.caption(f"Case: {res['case_ref']}")
+                elif res.get("label"):
+                    st.caption(f"Case: {res['label']}")
                 if res.get("cnr"):
                     st.caption(f"CNR: {res['cnr']}")
+                pdf_key_raw = f"{res.get('label', '')}_{res.get('cnr', '')}_{res.get('source_row', '')}_{idx}"
+                pdf_key = "download_pdf_" + re.sub(r"[^A-Za-z0-9_]+", "_", pdf_key_raw).strip("_")
                 st.download_button(
                     label="Download PDF",
                     data=res["data"],
                     file_name=f"{res['label'].replace('/', '_')}.pdf",
                     mime="application/pdf",
+                    key=pdf_key,
                 )
                 b64_pdf = base64.b64encode(res["data"]).decode("utf-8")
                 pdf_display = (
@@ -944,8 +1160,15 @@ if fetch_orders or run_single_retry:
         """
 <script>
   const anchor = window.parent.document.getElementById('results_anchor');
-  if (anchor) { anchor.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+  if (anchor) {
+    setTimeout(() => anchor.scrollIntoView({behavior: 'smooth', block: 'start'}), 150);
+  }
 </script>
 """,
         height=0,
     )
+
+
+
+
+
