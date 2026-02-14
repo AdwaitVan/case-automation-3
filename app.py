@@ -1688,17 +1688,3 @@ if fetch_orders or run_single_retry:
         height=0,
     )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
