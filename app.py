@@ -23,6 +23,8 @@ if not hasattr(Image, "ANTIALIAS") and hasattr(Image, "Resampling"):
     Image.ANTIALIAS = Image.Resampling.LANCZOS
 
 URL = "https://hcservices.ecourts.gov.in/hcservices/main.php"
+LEXTECHSUITE_LOGIN_URL = "https://lextechsuite.com/?opnLgn=yes"
+LEXTECHSUITE_CASES_URL = "https://lextechsuite.com/Member/Cases"
 MAX_RETRIES = 5
 CASE_TYPES_FILE = Path(__file__).with_name("bench_case_types.json")
 HIGH_COURTS = {
@@ -83,6 +85,12 @@ CASE_TYPES_BY_BENCH = load_case_types_by_bench(CASE_TYPES_FILE)
 def update_terminal(message, placeholder, logs):
     now = datetime.now().strftime("%H:%M:%S")
     logs.append(f"[{now}] {message}")
+    # Also mirror logs to the server console (VS Code terminal / container logs).
+    if os.getenv("PRINT_SERVER_LOGS", "1") == "1":
+        try:
+            print(f"[{now}] {message}", flush=True)
+        except Exception:
+            pass
     rendered_lines = logs[-260:]
     lines_html = "".join(
         f'<div class="term-line">{html.escape(line)}</div>' for line in rendered_lines
@@ -305,6 +313,366 @@ def digits_only(value: str, max_len: int):
     return cleaned[:max_len]
 
 
+
+def normalize_cnr_for_ls(cnr: str):
+    """Normalize CNR to the 16-char form LexTechSuite expects (strip hyphens/spaces)."""
+    raw = str(cnr or "").strip().upper()
+    return re.sub(r"[^A-Z0-9]", "", raw)
+
+
+def send_cnrs_to_lextechsuite(
+    cnrs,
+    email,
+    password,
+    headless=True,
+    terminal_placeholder=None,
+    debug=False,
+    debug_dir=Path("debug_artifacts"),
+):
+    """Send one or more CNR numbers to LexTechSuite Case Manager (+cnr -> Save Record)."""
+    logs = []
+    outcomes = []
+
+    email = (email or "").strip()
+    password = password or ""
+    if not email or not password:
+        raise ValueError("Missing LexTechSuite email/password")
+
+    cnrs_norm = []
+    for c in cnrs or []:
+        n = normalize_cnr_for_ls(c)
+        if n:
+            cnrs_norm.append(n)
+    seen = set()
+    cnrs_norm = [c for c in cnrs_norm if not (c in seen or seen.add(c))]
+    if not cnrs_norm:
+        raise ValueError("No CNRs to send")
+
+    def log(msg: str):
+        # Stream into the app Live terminal logs when available.
+        if terminal_placeholder is not None:
+            update_terminal(msg, terminal_placeholder, logs)
+        else:
+            ts = datetime.now().strftime("%H:%M:%S")
+            logs.append(f"[{ts}] {msg}")
+
+    with sync_playwright() as p:
+        log("[ls] start")
+        browser = p.chromium.launch(
+            headless=headless,
+            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+        )
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1440, "height": 900},
+            locale="en-US",
+        )
+        page = context.new_page()
+        page.set_default_timeout(60000)
+
+        def dump_state(tag: str):
+            if not debug:
+                return
+            try:
+                ensure_dir(debug_dir)
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                png = debug_dir / f"ls_{tag}_{ts}.png"
+                htmlp = debug_dir / f"ls_{tag}_{ts}.html"
+                page.screenshot(path=str(png), full_page=True)
+                htmlp.write_text(page.content(), encoding="utf-8", errors="ignore")
+                log(f"[ls] debug saved: {png.as_posix()}")
+            except Exception as err:
+                log(f"[ls] debug dump failed: {str(err).splitlines()[0]}")
+
+        def ensure_login_modal_visible():
+            # The login modal should auto-open on ?opnLgn=yes, but keep a safe fallback.
+            if page.locator("#loginEmail").count() > 0 and page.locator("#loginEmail").is_visible():
+                return
+            try:
+                login_btn = page.locator("a:has-text('LOGIN')")
+                if login_btn.count() == 0:
+                    login_btn = page.locator("text=LOGIN")
+                if login_btn.count() > 0:
+                    login_btn.first.click(force=True)
+                    time.sleep(0.8)
+            except Exception:
+                pass
+
+        def perform_login(tag: str):
+            # Always login from the modal-based entry URL, so we don't get stuck on /Public/Login.
+            page.goto(LEXTECHSUITE_LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
+            try:
+                page.wait_for_load_state("networkidle", timeout=30000)
+            except Exception:
+                pass
+
+            ensure_login_modal_visible()
+            page.wait_for_selector("#loginEmail", state="visible", timeout=45000)
+            page.locator("#loginEmail").fill(email)
+            page.locator("#loginPassword").fill(password)
+            dump_state(f"login_before_{tag}")
+            page.locator("#btnLogin").click()
+
+            # Wait for modal to close or at least stop being visible.
+            try:
+                page.wait_for_selector("#loginEmail", state="hidden", timeout=45000)
+            except Exception:
+                pass
+            try:
+                page.wait_for_load_state("networkidle", timeout=60000)
+            except Exception:
+                pass
+
+            # If the site shows an inline error, log it.
+            try:
+                alert = (page.locator("#alert1FormLogin").inner_text() or "").strip()
+                if alert:
+                    log(f"[ls] login alert ({tag}): {alert}")
+            except Exception:
+                pass
+
+            # Debug: show cookie names (not values).
+            if debug:
+                try:
+                    cookies = context.cookies("https://lextechsuite.com")
+                    names = sorted({c.get("name") for c in cookies if c.get("name")})
+                    log(f"[ls] cookies after login ({tag}): {', '.join(names) if names else '(none)'}")
+                except Exception as err:
+                    log(f"[ls] cookie read failed: {str(err).splitlines()[0]}")
+
+            dump_state(f"login_after_{tag}")
+
+
+        log("[ls] open login")
+        perform_login("initial")
+        log("[ls] login submitted")
+
+        def _goto_case_manager():
+            last_err = None
+            for nav_try in range(1, 4):
+                try:
+                    page.goto(LEXTECHSUITE_CASES_URL, wait_until="domcontentloaded", timeout=60000)
+                    try:
+                        page.wait_for_load_state("networkidle", timeout=30000)
+                    except Exception:
+                        pass
+
+                    if "MembersOnlyPage" in page.url:
+                        log("[ls] bounced to MembersOnlyPage (logged out). Re-login...")
+                        dump_state(f"members_only_{nav_try}")
+                        perform_login(f"relogin_{nav_try}")
+                        page.goto(LEXTECHSUITE_CASES_URL, wait_until="domcontentloaded", timeout=60000)
+                        try:
+                            page.wait_for_load_state("networkidle", timeout=30000)
+                        except Exception:
+                            pass
+
+                    log(f"[ls] open Case Manager try {nav_try}/3 url={page.url}")
+
+                    # Success condition: we really are on /Member/Cases (or at least have the FAB UI).
+                    has_fab = page.locator("button.kc_fab_main_btn").count() > 0
+                    has_sub = page.locator("button.sub_fab_btn").count() > 0
+                    try:
+                        has_js = bool(page.evaluate("""() => typeof itmAddModCNR === 'function'"""))
+                    except Exception:
+                        has_js = False
+
+                    if ("/Member/Cases" in page.url) or has_fab or has_sub or has_js:
+                        log(f"[ls] Case Manager ready fab={int(has_fab)} sub={int(has_sub)} js_itmAddModCNR={has_js}")
+                        return
+
+                    last_err = RuntimeError(f"Not on Case Manager (url={page.url})")
+                except Exception as nav_err:
+                    last_err = nav_err
+                    msg = str(nav_err).splitlines()[0]
+                    log(f"[ls] Case Manager nav failed (try {nav_try}/3): {msg}")
+
+                dump_state(f"cases_nav_failed_{nav_try}")
+
+                time.sleep(2.0)
+
+            raise last_err if last_err is not None else RuntimeError("Case Manager navigation failed")
+        log("[ls] open Case Manager")
+        _goto_case_manager()
+
+        def close_add_cnr_modal():
+            try:
+                if page.locator("#fcnr_number").count() > 0 and page.locator("#fcnr_number").is_visible():
+                    try:
+                        page.locator("button.btn-close, button[data-bs-dismiss='modal']").first.click(force=True, timeout=3000)
+                    except Exception:
+                        try:
+                            page.keyboard.press("Escape")
+                        except Exception:
+                            pass
+                    try:
+                        page.wait_for_selector("#fcnr_number", state="hidden", timeout=15000)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+        for idx, cnr16 in enumerate(cnrs_norm, start=1):
+            try:
+                if len(cnr16) != 16:
+                    outcomes.append({"cnr": cnr16, "ok": False, "reason": "CNR must be 16 chars after normalization"})
+                    log(f"[ls] skip {idx}/{len(cnrs_norm)} cnr={cnr16} reason=len!=16")
+                    continue
+
+                log(f"[ls] add cnr {idx}/{len(cnrs_norm)}: {cnr16}")
+                close_add_cnr_modal()
+                # Open the "Add CNR" modal.
+                # The UI uses a floating action button (FAB). Expand it, then click the +cnr sub-button.
+                opened = False
+
+                log("[ls] open +cnr modal")
+
+                for attempt in range(1, 4):
+                    fab_count = 0
+                    sub_count = 0
+                    try:
+                        page.wait_for_selector("button.kc_fab_main_btn", state="attached", timeout=8000)
+                    except Exception:
+                        pass
+
+                    try:
+                        fab = page.locator("button.kc_fab_main_btn")
+                        fab_count = fab.count()
+                        if fab_count > 0:
+                            fab.first.click(force=True)
+                            time.sleep(0.35)
+                    except Exception as err:
+                        log(f"[ls] FAB click attempt {attempt}/3 failed: {str(err).splitlines()[0]}")
+
+                    try:
+                        sub = page.locator("button.sub_fab_btn[data-link-href*='itmAddModCNR']")
+                        if sub.count() == 0:
+                            sub = page.locator("button.sub_fab_btn", has_text="+cnr")
+                        sub_count = sub.count()
+                        if sub_count > 0:
+                            sub.first.click(force=True)
+                            opened = True
+                            log(f"[ls] +cnr opened via sub button (attempt {attempt}/3)")
+                    except Exception as err:
+                        log(f"[ls] +cnr sub click attempt {attempt}/3 failed: {str(err).splitlines()[0]}")
+
+                    if not opened:
+                        try:
+                            ok = page.evaluate("""() => (typeof itmAddModCNR === 'function') ? (itmAddModCNR(), true) : false""")
+                            opened = bool(ok)
+                            log(f"[ls] itmAddModCNR() -> {opened} (attempt {attempt}/3)")
+                        except Exception as js_err:
+                            log(f"[ls] itmAddModCNR() JS failed (attempt {attempt}/3): {str(js_err).splitlines()[0]}")
+
+                    # Quick visibility check.
+                    try:
+                        if page.locator("#fcnr_number").count() > 0 and page.locator("#fcnr_number").is_visible():
+                            opened = True
+                    except Exception:
+                        pass
+
+                    if opened:
+                        break
+
+                    log(f"[ls] +cnr not opened yet (attempt {attempt}/3) fab={fab_count} sub={sub_count}")
+                    time.sleep(0.8)
+
+                if not opened:
+                    try:
+                        ensure_dir(Path("debug_artifacts"))
+                        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        page.screenshot(path=f"debug_artifacts/ls_openfab_{ts}.png", full_page=True)
+                        Path(f"debug_artifacts/ls_openfab_{ts}.html").write_text(page.content(), encoding="utf-8")
+                    except Exception:
+                        pass
+
+                    try:
+                        has_js = page.evaluate("""() => typeof itmAddModCNR === 'function'""")
+                    except Exception:
+                        has_js = False
+
+                    log(f"[ls] could not open +cnr modal. fab={page.locator('button.kc_fab_main_btn').count()} sub={page.locator('button.sub_fab_btn').count()} js_itmAddModCNR={has_js}")
+                    raise RuntimeError("Could not open +cnr modal")
+
+                # Wait for the CNR input. Some pages use name= instead of id=.
+                cnr_input = page.locator("#fcnr_number")
+                if cnr_input.count() == 0:
+                    cnr_input = page.locator("input[name='fcnr_number']")
+
+                try:
+                    cnr_input.wait_for(state="visible", timeout=30000)
+                except Exception:
+                    # Dump diagnostics for this exact failure.
+                    try:
+                        ensure_dir(Path("debug_artifacts"))
+                        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        page.screenshot(path=f"debug_artifacts/ls_addcnr_{ts}.png", full_page=True)
+                        Path(f"debug_artifacts/ls_addcnr_{ts}.html").write_text(page.content(), encoding="utf-8")
+                    except Exception:
+                        pass
+
+                    has_id = page.locator("#fcnr_number").count()
+                    has_name = page.locator("input[name='fcnr_number']").count()
+                    modal_count = page.locator(".modal-content").count()
+                    log(f"[ls] +cnr modal not visible. has_id={has_id} has_name={has_name} modal_content={modal_count}")
+                    raise
+
+                log("[ls] +cnr modal visible")
+                cnr_input.fill(cnr16)
+                page.select_option("#fwher", value="h")
+                page.locator("#btnSav").click()
+                log("[ls] save record clicked")
+
+                # Wait briefly for either an error message or modal close.
+                for _ in range(20):
+                    try:
+                        if page.locator("#spErr_frmAddMod").count() > 0 and page.locator("#spErr_frmAddMod").first.is_visible():
+                            break
+                    except Exception:
+                        pass
+                    try:
+                        if page.locator("#fcnr_number").count() == 0 or not page.locator("#fcnr_number").is_visible():
+                            break
+                    except Exception:
+                        pass
+                    time.sleep(0.5)
+
+                # If it already exists, LexTechSuite shows this element.
+                try:
+                    err_loc = page.locator("#spErr_frmAddMod")
+                    if err_loc.count() > 0:
+                        msg = (err_loc.first.inner_text() or "").strip()
+                        if msg:
+                            log(f"[ls] info: {msg}")
+                        if "already exists" in msg.lower():
+                            outcomes.append({"cnr": cnr16, "ok": True, "reason": "Already in LexSuite"})
+                            # Close the modal so the next CNR can be added.
+                            close_add_cnr_modal()
+                            continue
+                        if "record has been saved" in msg.lower():
+                            outcomes.append({"cnr": cnr16, "ok": True, "reason": "Sent to LexSuite"})
+                            # Try to close the modal so next CNR can be added.
+                            close_add_cnr_modal()
+                            continue
+                except Exception:
+                    pass
+
+                # Best-effort wait for modal to close.
+                try:
+                    page.wait_for_selector("#fcnr_number", state="hidden", timeout=15000)
+                except Exception:
+                    pass
+
+                outcomes.append({"cnr": cnr16, "ok": True, "reason": "Sent to LexSuite"})
+            except Exception as err:
+                msg = str(err).splitlines()[0]
+                outcomes.append({"cnr": cnr16, "ok": False, "reason": msg})
+                log(f"[ls] failed cnr={cnr16} err={msg}")
+
+        browser.close()
+        log("[ls] done")
+
+    return outcomes, logs
 def build_case_ref(case_type: str, no: str, year: str, search_mode: str):
     if (search_mode or "").upper() == "ST":
         return f"FILING/{no}/{year}"
@@ -339,7 +707,7 @@ def run_bot(
         update_terminal("[start] cloud robot", terminal_placeholder, logs)
 
         browser = p.chromium.launch(
-            headless=True,
+            headless=bool(st.session_state.get("ls_headless", True)),
             args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
         )
         context = browser.new_context(
@@ -633,6 +1001,7 @@ def run_bot(
 
 
 st.set_page_config(page_title="High Court Bot", layout="wide")
+
 st.title("High Court Automation")
 st.markdown(
     """
@@ -668,7 +1037,12 @@ st.markdown(
 main_col, bg_col = st.columns([2, 1], gap="large")
 
 with main_col:
-    st.subheader("Main")
+    main_head1, main_head2 = st.columns([4, 1])
+    with main_head1:
+        st.subheader("Main")
+    with main_head2:
+        if st.button("LexSuite", key="nav_lexsuite"):
+            st.session_state["scroll_to_lexsuite"] = True
     avg_case_seconds = float(st.session_state.get("avg_case_seconds", 35.0))
     st.caption(f"Estimated time per case: ~{int(avg_case_seconds)} sec")
     high_court_name = st.selectbox(
@@ -715,12 +1089,21 @@ with main_col:
     def set_focus_target(target_label):
         st.session_state["focus_input_label"] = target_label
 
-    action_col1, action_col2 = st.columns(2)
+    def _ls_has_cnrs():
+        try:
+            return any(o.get("cnr") for o in st.session_state.get("last_outcomes", [])) or any(r.get("cnr") for r in st.session_state.get("last_results", []))
+        except Exception:
+            return False
+
+    ls_can_send = _ls_has_cnrs()
+    action_col1, action_col2, action_col3 = st.columns([1, 1.2, 1.2])
     with action_col1:
         st.button("Add Row", key="top_add_row", on_click=add_row_once)
     with action_col2:
         st.button("Reset To First Sample", key="top_reset_rows", on_click=reset_to_first_sample_once)
-
+    with action_col3:
+        if st.button("Send to LS", key="top_send_to_ls", disabled=not ls_can_send, help="Run Fetch Orders first so CNR is available."):
+            st.session_state["send_to_ls_now"] = True
     st.markdown("**Case Table**")
     head1, head2, head3, head4, head5, head6, head7 = st.columns([5, 1.2, 6, 2, 2, 1, 1])
     head1.markdown("`bench`")
@@ -965,10 +1348,38 @@ with bg_col:
     default_debug_mode = os.getenv("DEBUG_MODE", "1") == "1"
     default_debug_dir = os.getenv("DEBUG_DIR", "debug_artifacts")
     debug_mode = st.checkbox("Enable cloud diagnostics", value=default_debug_mode)
-    debug_dir = Path(st.text_input("Diagnostics folder", value=default_debug_dir).strip() or "debug_artifacts")
+    debug_dir = Path(default_debug_dir)
     st.caption("Live terminal logs")
     timer_placeholder = st.empty()
     terminal = st.empty()
+    st.subheader("LexTechSuite")
+    if "ls_email" not in st.session_state:
+        st.session_state["ls_email"] = os.getenv("LS_EMAIL", "gunjanshah83@gmail.com")
+    if "ls_password" not in st.session_state:
+        # Avoid hardcoding credentials in the repo. Use env var for local testing.
+        st.session_state["ls_password"] = os.getenv("LS_PASSWORD", "")
+    if "ls_headless" not in st.session_state:
+        st.session_state["ls_headless"] = True
+    if "ls_debug" not in st.session_state:
+        st.session_state["ls_debug"] = False
+    st.text_input("LS email", key="ls_email")
+    st.text_input("LS password", type="password", key="ls_password")
+    st.checkbox("LS headless", key="ls_headless", help="Turn OFF for local debugging if login modal does not appear in headless mode.")
+    st.checkbox("LS debug", key="ls_debug", help="Save LS screenshots + HTML into debug_artifacts when login/navigation fails.")
+    st.caption("Send uses CNR(s) from the last run.")
+
+    ls_last_logs = st.session_state.get("ls_last_send_logs", [])
+    if ls_last_logs:
+        with st.expander("Last LS send logs", expanded=False):
+            st.code("\n".join(ls_last_logs), language="bash")
+
+    ls_last_outcomes = st.session_state.get("ls_last_send_outcomes", [])
+    if ls_last_outcomes:
+        ok_cnt = len([o for o in ls_last_outcomes if o.get("ok")])
+        st.caption(f"Last LS send: {ok_cnt}/{len(ls_last_outcomes)} submitted")
+        with st.expander("Last LS send results", expanded=False):
+            for o in ls_last_outcomes[:100]:
+                st.write(f"{'OK' if o.get('ok') else 'FAIL'} | {o.get('cnr')} | {o.get('reason')}")
 
     last_run_logs = st.session_state.get("last_run_logs", [])
     if last_run_logs:
@@ -985,7 +1396,7 @@ with bg_col:
 
     if debug_dir.exists():
         debug_files = sorted([p for p in debug_dir.iterdir() if p.is_file()], key=lambda p: p.stat().st_mtime, reverse=True)
-        st.caption(f"Debug path: `{debug_dir.as_posix()}` | Files: {len(debug_files)}")
+        st.caption(f"Debug files: {len(debug_files)}")
         if debug_files:
             zip_bytes = build_debug_zip_bytes(debug_dir)
             if zip_bytes:
@@ -1000,9 +1411,10 @@ with bg_col:
                 for p in debug_files[:20]:
                     st.write(p.name)
     else:
-        st.caption(f"Debug path: `{debug_dir.as_posix()}` (not created yet)")
+        st.caption("No debug files yet.")
 
 run_single_retry = retry_row_id is not None and retry_row_id in parsed_case_by_row_id
+
 if fetch_orders or run_single_retry:
     run_now = datetime.now()
     run_id = run_now.strftime("R-%y%m%d-%H%M%S")
@@ -1032,6 +1444,8 @@ if fetch_orders or run_single_retry:
         st.session_state["last_results"] = results
     st.session_state["last_run_logs"] = run_logs
     st.session_state["last_outcomes"] = case_outcomes
+    st.session_state["scroll_to_results"] = True
+    st.session_state["_rerun_after_fetch"] = True
     with bg_col:
         st.download_button(
             "Copy whole terminal logs (.txt)",
@@ -1070,7 +1484,7 @@ if fetch_orders or run_single_retry:
 
     if debug_mode:
         with bg_col:
-            st.info(f"Diagnostics saved under: `{debug_dir.as_posix()}`")
+            st.info("Diagnostics saved.")
             raw_img = latest_file(debug_dir, "*_captcha_raw_*.png")
             processed_img = latest_file(debug_dir, "*_captcha_processed_*.png")
             if raw_img or processed_img:
@@ -1090,6 +1504,10 @@ if fetch_orders or run_single_retry:
                         )
                     else:
                         st.write("No processed captcha image found yet.")
+
+# Rerun after fetch so top controls (e.g. Send to LS) reflect new session_state.
+if st.session_state.pop("_rerun_after_fetch", False):
+    st.rerun()
 
 with main_col:
     st.markdown('<div id="results_anchor"></div>', unsafe_allow_html=True)
@@ -1155,6 +1573,108 @@ with main_col:
     elif "last_results" in st.session_state:
         st.warning("Run finished, but no orders were fetched in this attempt. Check terminal/debug artifacts in Background.")
 
+    st.markdown("---")
+    st.markdown("<div id=\"lexsuite_anchor\"></div>", unsafe_allow_html=True)
+    st.subheader("LexSuite")
+    ls_out = st.session_state.get("ls_last_send_outcomes", [])
+    if ls_out:
+        rows = []
+        for o in ls_out:
+            cnr = o.get("cnr", "")
+            case_ref = o.get("case_ref", "") or ""
+            status = o.get("status") or ("Sent to LexSuite" if o.get("ok") else "Failed")
+            if not case_ref:
+                case_ref = "CASE"
+            rows.append({"CNR + Case": f"{cnr} | {case_ref}", "LexSuite": status})
+        st.dataframe(rows, width=None)
+    else:
+        st.caption("No LexSuite sends yet.")
+
+
+# Send CNR(s) to LexTechSuite when user clicks the button.
+if st.session_state.pop("send_to_ls_now", False):
+    last_outcomes = st.session_state.get("last_outcomes", [])
+    last_results = st.session_state.get("last_results", [])
+
+    cnrs = []
+    for r in last_results:
+        if r.get("cnr"):
+            cnrs.append(r.get("cnr"))
+    for o in last_outcomes:
+        if o.get("cnr"):
+            cnrs.append(o.get("cnr"))
+
+    seen = set()
+    cnrs = [c for c in cnrs if c and not (c in seen or seen.add(c))]
+
+    if not cnrs:
+        st.error("No CNR found from last run to send. Run Fetch Orders first.")
+    else:
+        email = st.session_state.get("ls_email", "")
+        password = st.session_state.get("ls_password", "")
+        with st.spinner(f"Sending {len(cnrs)} CNR(s) to LexTechSuite..."):
+            try:
+                cnr_to_case_ref = {}
+                for r in last_results:
+                    c = r.get("cnr")
+                    if c and c not in cnr_to_case_ref:
+                        cnr_to_case_ref[c] = r.get("case_ref") or r.get("label") or ""
+                for o in last_outcomes:
+                    c = o.get("cnr")
+                    if c and c not in cnr_to_case_ref:
+                        cnr_to_case_ref[c] = o.get("case_ref") or ""
+                ls_outcomes, ls_logs = send_cnrs_to_lextechsuite(
+                    cnrs=cnrs,
+                    email=email,
+                    password=password,
+                    headless=bool(st.session_state.get("ls_headless", True)),
+                    terminal_placeholder=terminal,
+                    debug=bool(st.session_state.get("ls_debug", False)),
+                    debug_dir=debug_dir,
+                )
+                for _o in ls_outcomes:
+                    _o["case_ref"] = cnr_to_case_ref.get(_o.get("cnr"), "")
+                    # Normalize for display
+                    if _o.get("ok") and ("already" in str(_o.get("reason", "")).lower()):
+                        _o["status"] = "Already in LexSuite"
+                    elif _o.get("ok"):
+                        _o["status"] = "Sent to LexSuite"
+                    else:
+                        _o["status"] = "Failed"
+                        _o["reason"] = _o.get("reason") or "Unknown"
+                st.session_state["ls_last_send_outcomes"] = ls_outcomes
+                st.session_state["ls_last_send_logs"] = ls_logs
+                ok_cnt = len([o for o in ls_outcomes if o.get("ok")])
+                st.success(f"LexSuite: {ok_cnt}/{len(ls_outcomes)} processed")
+            except Exception as err:
+                st.session_state["ls_last_send_logs"] = [f"[error] {str(err)}"]
+                st.error(str(err))
+
+# Scroll to results section when a rerun happens after Fetch Orders.
+if st.session_state.pop("scroll_to_results", False):
+    components.html(
+        """
+<script>
+  const anchor = window.parent.document.getElementById('results_anchor');
+  if (anchor) { anchor.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+</script>
+""",
+        height=0,
+    )
+
+# Scroll to LexSuite section when user clicks the top nav button.
+if st.session_state.pop("scroll_to_lexsuite", False):
+    components.html(
+        """
+<script>
+  const anchor = window.parent.document.getElementById('lexsuite_anchor');
+  if (anchor) { anchor.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+</script>
+""",
+        height=0,
+    )
+    st.session_state["scroll_to_lexsuite_done"] = True
+
 if fetch_orders or run_single_retry:
     components.html(
         """
@@ -1167,6 +1687,16 @@ if fetch_orders or run_single_retry:
 """,
         height=0,
     )
+
+
+
+
+
+
+
+
+
+
 
 
 
